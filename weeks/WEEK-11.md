@@ -183,7 +183,7 @@ $ code-eval run --model qwen-coder-1.5b --tasks humaneval --n-samples 10
 pass@1 = 0.41
 pass@10 = 0.58
 
-$ code-eval run --model my-finetuned-v2 --tasks tasks/design-to-code.jsonl --n-samples 5
+$ code-eval run --model my-finetuned-v2 --tasks tasks/mytask.jsonl --n-samples 5
 [##############################] 50/50 tasks
 pass@1 = 0.66
 pass@5 = 0.84

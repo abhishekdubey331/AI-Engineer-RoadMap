@@ -86,7 +86,7 @@ By the end of the 16 weeks, you will have shipped a **complete portfolio**:
 | 13 | `code-helper-agent` — tool-using coding agent (hand-rolled + Agents SDK) | Tool calling, agent design | [W13](./weeks/WEEK-13.md) |
 | 14 | `coding-agent-graph` — multi-step agent in LangGraph w/ HIL | Agent orchestration | [W14](./weeks/WEEK-14.md) |
 | 15 | `agent-eval-and-obs` — eval suite + Langfuse traces + benchmarks | Agent eval + observability | [W15](./weeks/WEEK-15.md) |
-| 16 | **🏁 `design-to-code-agent`** — full capstone, end-to-end system | **Everything above** | [W16](./weeks/WEEK-16.md) |
+| 16 | **🏁 `swe-bench-coding-agent`** — autonomous coding agent benchmarked on SWE-bench-Verified-Lite | **Everything above + public headline number** | [W16](./weeks/WEEK-16.md) |
 
 Pin these on your GitHub. They *are* your portfolio.
 
@@ -144,7 +144,7 @@ Pin these on your GitHub. They *are* your portfolio.
 | **[13](./weeks/WEEK-13.md)** | Tool calling + agent design patterns | `code-helper-agent` (hand-rolled + Agents SDK) | Anthropic *Building Effective Agents*, OpenAI Agents SDK |
 | **[14](./weeks/WEEK-14.md)** | Agent orchestration with LangGraph | `coding-agent-graph` w/ HIL + checkpoints | LangGraph docs |
 | **[15](./weeks/WEEK-15.md)** | Agent evaluation + observability (Langfuse) | `agent-eval-and-obs` + SWE-bench-Lite run | Anthropic on agent evals, Langfuse, Inspect AI |
-| **[16](./weeks/WEEK-16.md)** | 🏁 **Capstone: Design-to-Code Agent** | End-to-end system w/ README + demo | All of the above |
+| **[16](./weeks/WEEK-16.md)** | 🏁 **Capstone: Autonomous Coding Agent on SWE-bench-Verified-Lite** | End-to-end system w/ public benchmark headline number + demo | All of the above |
 
 ---
 

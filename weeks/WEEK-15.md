@@ -67,7 +67,7 @@ Build `agent_eval/` with:
     "difficulty": "easy"
   }
   ```
-- Mix categories: bug fix, refactor, new feature, doc update, test writing, design-to-code
+- Mix categories: bug fix, refactor, new feature, doc update, test writing, code-review feedback application
 - Mix difficulties: easy / medium / hard
 
 - `run.py` — runs every task N times against your Week-14 agent, captures full traces
@@ -269,4 +269,4 @@ agent-eval-and-obs/
 
 ---
 
-← Previous: [Week 14 — LangGraph Orchestration](./WEEK-14.md) · → Next: [Week 16 — Capstone: Design-to-Code Agent](./WEEK-16.md)
+← Previous: [Week 14 — LangGraph Orchestration](./WEEK-14.md) · → Next: [Week 16 — Capstone: Autonomous Coding Agent on SWE-bench-Verified-Lite](./WEEK-16.md)
