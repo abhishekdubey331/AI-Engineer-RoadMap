@@ -1,196 +1,300 @@
-# The 4-Month AI Engineer Roadmap
+<div align="center">
 
-> **Deep, day-wise roadmap to go from "I know Python" to "I can ship production-grade LLM systems, code models, and AI agents."**
+# 🧠 AI Engineer Roadmap
 
-This is a compressed, deep-learning-focused version of the classic 6-month AI engineering path. It assumes you already have software-engineering fundamentals (Python, Git, Linux, FastAPI basics, a feel for ML). If you don't, start with [PREREQUISITES.md](./PREREQUISITES.md) before Week 1.
+### **From "I know Python" to "I ship production LLM systems" — in 4 months, day by day.**
 
-The roadmap is built around three principles:
+A free, open-source, deeply-researched 16-week roadmap covering **LLM internals, fine-tuning, RAG, inference optimization, agents, evaluation, and observability**. Every week is built on top-tier resources from Karpathy, Anthropic, OpenAI, Hugging Face, Sebastian Raschka, Lilian Weng, 3Blue1Brown, vLLM, and LangChain.
 
-1. **Build, don't just read.** Every week ends with a working artifact.
-2. **Evaluate, don't vibe-check.** Every model change has a measurable eval.
-3. **Top-tier resources only.** Every link in this roadmap has been picked from the best educators in the field — Karpathy, 3Blue1Brown, Sebastian Raschka, Lilian Weng, Anthropic, Hugging Face, vLLM, the original paper authors.
+[![Stars](https://img.shields.io/github/stars/abhishekdubey331/AI-Engineer-RoadMap?style=for-the-badge&logo=github&color=fbbf24&logoColor=black)](https://github.com/abhishekdubey331/AI-Engineer-RoadMap/stargazers)
+[![Forks](https://img.shields.io/github/forks/abhishekdubey331/AI-Engineer-RoadMap?style=for-the-badge&logo=github&color=60a5fa&logoColor=white)](https://github.com/abhishekdubey331/AI-Engineer-RoadMap/network/members)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg?style=for-the-badge)](./LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ec4899.svg?style=for-the-badge)](#-contributing)
 
----
+[![Weeks](https://img.shields.io/badge/Weeks-16-8b5cf6?style=flat-square)](./weeks)
+[![Months](https://img.shields.io/badge/Months-4-8b5cf6?style=flat-square)](#-the-16-week-map)
+[![Projects](https://img.shields.io/badge/Portfolio_Projects-16-22c55e?style=flat-square)](#-what-youll-have-built)
+[![Time](https://img.shields.io/badge/Time-2--3_hrs%2Fday-f97316?style=flat-square)](#-how-to-use-this-roadmap)
+[![Updated](https://img.shields.io/github/last-commit/abhishekdubey331/AI-Engineer-RoadMap?style=flat-square&label=updated&color=06b6d4)](https://github.com/abhishekdubey331/AI-Engineer-RoadMap/commits)
 
-## Who this is for
+[**🚀 Start Here**](./weeks/WEEK-01.md) ・ [**📋 Prerequisites**](./PREREQUISITES.md) ・ [**🗺️ 16-Week Map**](#-the-16-week-map) ・ [**🛠️ Stack**](#-the-stack-youll-learn) ・ [**🤝 Contribute**](#-contributing)
 
-You want to become the kind of AI engineer who can:
-
-- Own a training-to-inference pipeline for a code or domain model
-- Optimize inference with quantization, caching, and smart routing
-- Fine-tune domain-specific LLMs (code generation, refactoring, reasoning)
-- Design AI pipelines: prompting, retrieval, agents, evaluation
-- Build agentic systems with multi-step tool calling
-- Establish standards for benchmarking, evaluation, and observability
-- Ship AI features end-to-end
-
-This is **not** a "prompt engineer" track. It's a software-engineer-becomes-AI-engineer track.
+</div>
 
 ---
 
-## What you'll have built by the end
+## 🎯 What this is
 
-| # | Artifact | Week |
+**A working AI engineer's training plan.** Not a course. Not a cheat sheet. Not "100 resources you should look at someday." A sequenced, opinionated, day-by-day path that — if you actually do the work — leaves you with **16 GitHub projects, 1 fine-tuned model published to Hugging Face, and a portfolio capstone** strong enough for serious AI-engineering interviews.
+
+The roadmap is structured so that each week:
+
+- 🎬 Starts with the **best video / article** for the topic (no generic surveys — specific picks)
+- 📚 Has a **deep-dive reading list** (papers, blog posts, official docs)
+- 💻 Includes a **hands-on lab** so concepts stick
+- 🛠️ Ends with a **shippable project** that goes on your GitHub
+- ✅ Has a **"Done when…" checklist** so you know when to move on
+
+---
+
+## 🔥 Why this exists
+
+Most AI-engineering content online is one of three things:
+
+1. **Toy tutorials** ("Build a ChatGPT clone in 10 lines!") — fine for an afternoon, useless for a career.
+2. **Generic surveys** ("100 papers you should read in 2026") — paralysis-inducing, never finished.
+3. **Paid bootcamps** charging $5K+ for what's freely available on YouTube and Hugging Face.
+
+The free internet has *everything* an AI engineer needs to know. What's missing is **sequencing** — what to learn first, what to skip, what to build to make it stick, and how to know you've actually learned it.
+
+That's what this roadmap is.
+
+---
+
+## 👥 Who this is for
+
+✅ Software engineers transitioning to AI / ML engineering
+✅ Backend / full-stack engineers who want to ship LLM-powered features
+✅ ML engineers moving from classical ML to LLM systems
+✅ Self-taught learners who already know Python and Git and want a serious path forward
+✅ Bootcamp grads who want to go beyond "call the OpenAI API"
+
+❌ Absolute beginners who don't know Python yet — start with [our prerequisites](./PREREQUISITES.md) first
+❌ Researchers chasing SOTA papers — this is an *engineering* roadmap, not a research one
+❌ Anyone looking for a 2-week shortcut — this is 4 months of real work
+
+---
+
+## 🏆 What you'll have built
+
+By the end of the 16 weeks, you will have shipped a **complete portfolio**:
+
+| # | Project | Skill it proves | Week |
+|---|---|---|---|
+| 01 | `token-budget` — BPE tokenizer from scratch + token-budget CLI | Tokenization, embeddings | [W1](./weeks/WEEK-01.md) |
+| 02 | `mini-gpt` — train a tiny GPT on your own corpus | Transformer internals | [W2](./weeks/WEEK-02.md) |
+| 03 | `code-completer` — local code-completion CLI w/ model benchmark | HF inference, KV cache | [W3](./weeks/WEEK-03.md) |
+| 04 | `structured-code-reviewer` — JSON-schema-validated code review bot | Prompting, function calling | [W4](./weeks/WEEK-04.md) |
+| 05 | `docs-rag` — chat-with-docs RAG with citations | RAG fundamentals | [W5](./weeks/WEEK-05.md) |
+| 06 | `advanced-rag` — hybrid + rerank + Contextual Retrieval + Ragas | Production RAG | [W6](./weeks/WEEK-06.md) |
+| 07 | `instruct-dataset-v1` — 1k+ examples for a narrow task | Dataset engineering | [W7](./weeks/WEEK-07.md) |
+| 08 | `lora-codetune` — fine-tuned code model + adapter on HF Hub | LoRA + TRL + Unsloth | [W8](./weeks/WEEK-08.md) |
+| 09 | `model-zoo-benchmark` — base / LoRA / QLoRA / GPTQ / AWQ / GGUF | Quantization | [W9](./weeks/WEEK-09.md) |
+| 10 | `vllm-server` — vLLM + Prometheus + Grafana inference stack | Production serving | [W10](./weeks/WEEK-10.md) |
+| 11 | `code-eval-harness` — sandboxed pass@k evaluation harness | Eval engineering | [W11](./weeks/WEEK-11.md) |
+| 12 | `ai-gateway` — semantic cache + model router + rate limits | LLM platform engineering | [W12](./weeks/WEEK-12.md) |
+| 13 | `code-helper-agent` — tool-using coding agent (hand-rolled + Agents SDK) | Tool calling, agent design | [W13](./weeks/WEEK-13.md) |
+| 14 | `coding-agent-graph` — multi-step agent in LangGraph w/ HIL | Agent orchestration | [W14](./weeks/WEEK-14.md) |
+| 15 | `agent-eval-and-obs` — eval suite + Langfuse traces + benchmarks | Agent eval + observability | [W15](./weeks/WEEK-15.md) |
+| 16 | **🏁 `design-to-code-agent`** — full capstone, end-to-end system | **Everything above** | [W16](./weeks/WEEK-16.md) |
+
+Pin these on your GitHub. They *are* your portfolio.
+
+---
+
+## 🗺️ The 16-week map
+
+<div align="center">
+
+### Month 1 · Foundations of LLMs
+
+</div>
+
+| Week | Topic | Project | Key resources |
+|:---:|---|---|---|
+| **[01](./weeks/WEEK-01.md)** | Tokenization & Embeddings | BPE from scratch + `token-budget` CLI | Karpathy *minbpe*, HF NLP Course |
+| **[02](./weeks/WEEK-02.md)** | The Transformer (attention, decoder-only) | Train a `mini-gpt` on a custom corpus | Karpathy *Let's build GPT*, Jay Alammar, 3Blue1Brown |
+| **[03](./weeks/WEEK-03.md)** | Modern LLM internals + Hugging Face | Local `code-completer` w/ benchmark mode | HF docs, KV-cache deep dive |
+| **[04](./weeks/WEEK-04.md)** | Prompting, structured outputs, function calling | `structured-code-reviewer` (Pydantic + retries) | Anthropic + OpenAI prompting docs, Instructor, Outlines |
+
+<div align="center">
+
+### Month 2 · Building with LLMs
+
+</div>
+
+| Week | Topic | Project | Key resources |
+|:---:|---|---|---|
+| **[05](./weeks/WEEK-05.md)** | RAG fundamentals (chunking, embeddings, vector DBs) | `docs-rag` (from scratch + LlamaIndex) | Pinecone Learn, Greg Kamradt, MTEB |
+| **[06](./weeks/WEEK-06.md)** | Advanced RAG: hybrid search, reranking, contextual retrieval | `advanced-rag` w/ Ragas eval | Anthropic Contextual Retrieval, Sentence-Transformers |
+| **[07](./weeks/WEEK-07.md)** | Fine-tuning theory + dataset preparation | `instruct-dataset-v1` (1k+ examples + dataset card) | Sebastian Raschka, Alpaca, Self-Instruct |
+| **[08](./weeks/WEEK-08.md)** | LoRA fine-tuning hands-on (TRL + PEFT + Unsloth) | `lora-codetune` + adapter on HF Hub | TRL, PEFT, Unsloth, Raschka practical tips |
+
+<div align="center">
+
+### Month 3 · Production LLM Systems
+
+</div>
+
+| Week | Topic | Project | Key resources |
+|:---:|---|---|---|
+| **[09](./weeks/WEEK-09.md)** | QLoRA + quantization (GPTQ, AWQ, GGUF) | `model-zoo-benchmark` — full quant sweep | Maarten Grootendorst's visual guide, QLoRA paper |
+| **[10](./weeks/WEEK-10.md)** | Inference servers (vLLM, PagedAttention, KV cache) | `vllm-server` + Prometheus + Grafana | vLLM docs, Anyscale on continuous batching |
+| **[11](./weeks/WEEK-11.md)** | Code evaluation (HumanEval, SWE-bench, pass@k) | `code-eval-harness` — sandboxed runner | HumanEval, BigCodeBench, Inspect AI |
+| **[12](./weeks/WEEK-12.md)** | Caching, routing, production API hardening | `ai-gateway` w/ semantic cache & router | GPTCache, LiteLLM, Anthropic prompt caching |
+
+<div align="center">
+
+### Month 4 · Agents, Evaluation & Capstone
+
+</div>
+
+| Week | Topic | Project | Key resources |
+|:---:|---|---|---|
+| **[13](./weeks/WEEK-13.md)** | Tool calling + agent design patterns | `code-helper-agent` (hand-rolled + Agents SDK) | Anthropic *Building Effective Agents*, OpenAI Agents SDK |
+| **[14](./weeks/WEEK-14.md)** | Agent orchestration with LangGraph | `coding-agent-graph` w/ HIL + checkpoints | LangGraph docs |
+| **[15](./weeks/WEEK-15.md)** | Agent evaluation + observability (Langfuse) | `agent-eval-and-obs` + SWE-bench-Lite run | Anthropic on agent evals, Langfuse, Inspect AI |
+| **[16](./weeks/WEEK-16.md)** | 🏁 **Capstone: Design-to-Code Agent** | End-to-end system w/ README + demo | All of the above |
+
+---
+
+## ⚙️ How to use this roadmap
+
+> **The way you "do" this roadmap matters more than the roadmap itself.**
+
+1. **Skim the [Prerequisites](./PREREQUISITES.md).** If anything is unfamiliar, fix that first — it's a self-audit, not gatekeeping.
+2. **Open [Week 1](./weeks/WEEK-01.md) on a Monday morning.** Read the whole week first, then start Day 1.
+3. **Build the project.** A week without a finished artifact is a week you didn't really do.
+4. **Push every project to GitHub.** Pin the good ones.
+5. **Write a 1-paragraph retro** at the end of each week — what worked, what failed, what surprised you.
+6. **Move on.** Resist the temptation to "perfect" a week. Done > perfect.
+
+### ⏱️ Time commitment
+
+| Pace | Hours / week | What you'll get |
 |---|---|---|
-| 1 | A from-scratch BPE tokenizer | 1 |
-| 2 | A nano-GPT trained on your own corpus | 2 |
-| 3 | A local code-completion CLI on an open-weight model | 3 |
-| 4 | A structured code-review bot (JSON schema, retries) | 4 |
-| 5 | A docs-aware RAG assistant | 5 |
-| 6 | An advanced RAG with hybrid search + reranking + contextual retrieval | 6 |
-| 7 | An instruction dataset for a narrow code task | 7 |
-| 8 | A LoRA-fine-tuned code model (with before/after eval) | 8 |
-| 9 | A QLoRA vs LoRA vs base-model quantization benchmark | 9 |
-| 10 | A vLLM-served inference API with streaming | 10 |
-| 11 | A HumanEval-style code-eval harness with sandboxed execution | 11 |
-| 12 | A production-style AI gateway (caching, routing, rate limits) | 12 |
-| 13 | A tool-using code assistant (function calling, safety) | 13 |
-| 14 | A LangGraph multi-step coding agent | 14 |
-| 15 | An agent eval suite + Langfuse-style observability layer | 15 |
-| 16 | **Capstone: Design-to-Code Agent** | 16 |
+| 🟢 **Sustainable** | 15–20 hrs (≈ 2–3 hrs / day) | Default. Full coverage. Strong portfolio. |
+| 🟡 **Aggressive** | 25–30 hrs | Finish in ~3 months. Some polish lost. |
+| 🔴 **Sabbatical / bootcamp** | 40+ hrs | Finish in ~2 months. Bring snacks. |
 
-Pin these on GitHub. They are your portfolio.
-
----
-
-## How the roadmap is structured
+### 🎯 Weekly rhythm
 
 ```
-Month 1  Foundations of LLMs        →  Weeks 1–4
-Month 2  Building with LLMs         →  Weeks 5–8
-Month 3  Production LLM Systems     →  Weeks 9–12
-Month 4  Agents, Eval, Capstone     →  Weeks 13–16
-```
-
-Each week has its own file in [`weeks/`](./weeks/) with:
-
-- **Theme + learning objectives**
-- **A day-by-day plan** (7 days, ~2–3 hrs/day, ~15–20 hrs/week)
-- **Curated theory** — the best articles, papers, and videos
-- **A hands-on lab** — short code exercises during the week
-- **A weekly project** — the deliverable that goes on your GitHub
-- **A "Done when…" checklist** so you know when to move on
-
----
-
-## The 16-week map
-
-### Month 1 — Foundations of LLMs
-
-| Week | Topic | Project |
-|------|-------|---------|
-| [01](./weeks/WEEK-01.md) | Tokenization & Embeddings (BPE from scratch) | `minbpe`-style tokenizer + token-budget tool |
-| [02](./weeks/WEEK-02.md) | The Transformer (attention, decoder-only) | Train a nano-GPT on a tiny corpus |
-| [03](./weeks/WEEK-03.md) | Modern LLM internals + Hugging Face hands-on | Local code-completion CLI |
-| [04](./weeks/WEEK-04.md) | Prompting, structured outputs, function calling | Structured code-review bot |
-
-### Month 2 — Building with LLMs
-
-| Week | Topic | Project |
-|------|-------|---------|
-| [05](./weeks/WEEK-05.md) | RAG fundamentals (chunking, embeddings, vector DBs) | Docs-aware code assistant |
-| [06](./weeks/WEEK-06.md) | Advanced RAG (hybrid search, reranking, contextual retrieval) | Production-quality RAG over a real codebase |
-| [07](./weeks/WEEK-07.md) | Fine-tuning theory + dataset preparation | Instruction dataset (1k–5k examples) |
-| [08](./weeks/WEEK-08.md) | LoRA fine-tuning hands-on | Fine-tuned small code model + before/after eval |
-
-### Month 3 — Production LLM Systems
-
-| Week | Topic | Project |
-|------|-------|---------|
-| [09](./weeks/WEEK-09.md) | QLoRA + quantization (GPTQ, AWQ, GGUF) | LoRA vs QLoRA vs quantized benchmark |
-| [10](./weeks/WEEK-10.md) | Inference servers (vLLM, PagedAttention, KV cache) | vLLM-backed streaming inference API |
-| [11](./weeks/WEEK-11.md) | Code evaluation (HumanEval, SWE-bench, pass@k) | Sandboxed code-eval harness |
-| [12](./weeks/WEEK-12.md) | Caching, routing, production API hardening | AI gateway with semantic cache + model router |
-
-### Month 4 — Agents, Evaluation, Capstone
-
-| Week | Topic | Project |
-|------|-------|---------|
-| [13](./weeks/WEEK-13.md) | Tool calling + agent design patterns | Tool-using code assistant with safety boundaries |
-| [14](./weeks/WEEK-14.md) | Agent orchestration with LangGraph | Multi-step coding agent (plan→edit→test→reflect) |
-| [15](./weeks/WEEK-15.md) | Agent evaluation + observability | Agent eval suite + Langfuse-style trace viewer |
-| [16](./weeks/WEEK-16.md) | **Capstone — Design-to-Code Agent** | End-to-end system + README + demo |
-
----
-
-## Weekly rhythm (2–3 hrs/day, ~15–20 hrs/week)
-
-Each week file follows this shape:
-
-```
-Day 1   Theory primer (best video + foundational article)
-Day 2   Deep dive #1 (paper or long-form article)
-Day 3   Deep dive #2 + small hands-on lab
-Day 4   Hands-on lab (read code, run notebooks)
-Day 5   Build the weekly project — part 1
-Day 6   Build the weekly project — part 2
-Day 7   Polish, write the README, commit, reflect
-```
-
-The split is roughly:
-
-```
-40%  building
+40%  building (the project)
 25%  reading / docs
 20%  debugging / evaluation
 10%  writing notes
  5%  sharing / publishing
 ```
 
-If you spend 80% of your time watching videos, you are avoiding the real work. The course feeling-of-productivity is a trap.
+If you spend 80% of your time watching videos, you are *avoiding* the work, not doing it. The course-feeling-of-productivity is a trap.
 
 ---
 
-## Recommended stack
+## 🛠️ The stack you'll learn
 
-**Core:** Python, Git, Linux shell, Docker, FastAPI, Pytest
-**Modeling:** PyTorch, Hugging Face Transformers / Datasets / Accelerate, PEFT, TRL, Unsloth
-**Inference:** vLLM, llama.cpp, Ollama, Text Generation Inference (TGI)
-**Quantization:** bitsandbytes, auto-gptq, autoawq, GGUF
-**Retrieval:** sentence-transformers, FAISS, Qdrant or Chroma, BM25 (rank-bm25), Cohere/BGE rerankers
-**Agents:** LangGraph, OpenAI Agents SDK, Anthropic tool use
-**Eval:** HumanEval, BigCodeBench, Ragas, custom unit-test harnesses, LLM-as-judge
-**Observability:** Langfuse (open source) or LangSmith / Phoenix
+<div align="center">
 
-You don't need all of these in week 1. The weekly files install only what you need that week.
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
+![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-FFD21E?style=for-the-badge&logoColor=black)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![vLLM](https://img.shields.io/badge/vLLM-FF6F00?style=for-the-badge)
+![LangGraph](https://img.shields.io/badge/LangGraph-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Qdrant-DC382D?style=for-the-badge)
+![Langfuse](https://img.shields.io/badge/Langfuse-0A0A0A?style=for-the-badge)
+
+</div>
+
+| Category | Tools |
+|---|---|
+| **Core** | Python, Git, Linux shell, Docker, FastAPI, Pytest |
+| **Modeling** | PyTorch, Hugging Face Transformers / Datasets / Accelerate, PEFT, TRL, Unsloth |
+| **Inference** | vLLM, llama.cpp, Ollama, Text Generation Inference (TGI) |
+| **Quantization** | bitsandbytes, auto-gptq, autoawq, GGUF |
+| **Retrieval** | sentence-transformers, Qdrant / Chroma, FAISS, BM25, BGE rerankers |
+| **Agents** | LangGraph, OpenAI Agents SDK, Anthropic tool use |
+| **Evaluation** | HumanEval, BigCodeBench, Ragas, Inspect AI, LLM-as-judge |
+| **Observability** | Langfuse (default), LangSmith, Arize Phoenix |
 
 ---
 
-## Hardware notes
+## 💻 Hardware notes
 
 The whole roadmap is doable on:
 
-- A laptop + free Google Colab (T4) / Kaggle (P100/T4×2) for training weeks
-- Or a personal GPU (16GB+ VRAM is comfortable)
-- Or rented hourly GPUs (Runpod, Lambda, Vast.ai) — typically $0.30–$1/hr for an RTX 4090 / A10
+- **🆓 Free tier:** a laptop + Google Colab T4 / Kaggle (T4×2) for training weeks
+- **💻 Personal GPU:** 16GB+ VRAM is comfortable
+- **☁️ Rented:** Runpod / Lambda / Vast.ai — typically **$0.30–$1/hr** for an RTX 4090 / A10
 
-A small model (1B–3B params) on QLoRA is what most weeks use. You do not need an H100.
-
----
-
-## How to use this repo
-
-1. Clone it.
-2. Read [PREREQUISITES.md](./PREREQUISITES.md). If anything is unfamiliar, fix that first.
-3. Each Monday morning, open `weeks/WEEK-XX.md`, skim the whole week, then start Day 1.
-4. Keep your week's artifact in its own repo (or a sub-folder of a portfolio repo).
-5. At the end of every week, write a short retro (what worked, what didn't, what failed) — this is what differentiates strong engineers.
+Most weeks use a small model (1B–3B params) on QLoRA. **You don't need an H100.**
 
 ---
 
-## A note on "doing every video"
+## 🌟 Why "yet another roadmap"?
 
-You will be tempted to watch every linked video and read every linked article. Don't. The roadmap is a buffet, not a checklist. Pick the format that matches how you learn best:
-
-- **You're a reader?** Articles + papers, skip the videos.
-- **You're a watcher?** Videos + code-along, skim the articles.
-- **You learn by doing?** Jump to the project on Day 1 and use the readings as a reference.
-
-The deliverable at the end of each week is the only thing that matters.
+| | Other roadmaps | **This roadmap** |
+|---|:---:|:---:|
+| Generic ML survey | ✅ | ❌ |
+| Built around 2025–2026 stack (vLLM, LangGraph, Contextual Retrieval) | ❌ | ✅ |
+| Day-by-day plan | ❌ | ✅ |
+| Every week ends with a shippable project | ❌ | ✅ |
+| Curated by topic from named experts (Karpathy, Raschka, Weng…) | ❌ | ✅ |
+| Includes evaluation & observability (not just "build & ship") | ❌ | ✅ |
+| Free, open-source, MIT-licensed | ⚠️ | ✅ |
 
 ---
 
-## Final Rule
+## 🤝 Contributing
+
+This roadmap stays useful only if its community keeps it honest. **PRs are not just welcome — they're the point.**
+
+Ways to contribute:
+
+- 🔗 **Found a broken link?** → Open an issue or PR
+- 📚 **Better resource than what's listed?** → Open a PR replacing it (must be at least as in-depth)
+- 🐛 **Spotted a factual error?** → Open an issue
+- ⚡ **Finished a week and have feedback?** → Open a discussion
+- 🏗️ **Built a great Week-X project?** → Open a PR linking to it in a `community-projects/` section
+- 🌍 **Want to translate a week?** → Open an issue first to coordinate
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) (coming soon) for the long version.
+
+---
+
+## ⭐ Star history
+
+If this roadmap is useful, **starring the repo** is the single biggest signal you can send. It helps other learners find it and keeps the project visible enough for me (and contributors) to keep updating.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=abhishekdubey331/AI-Engineer-RoadMap&type=Date)](https://star-history.com/#abhishekdubey331/AI-Engineer-RoadMap&Date)
+
+---
+
+## 🙏 Acknowledgements
+
+This roadmap stands on the shoulders of giants. The single best resources, by topic:
+
+- **Tokenization & transformers** — [Andrej Karpathy](https://karpathy.ai/), [3Blue1Brown](https://www.3blue1brown.com/topics/neural-networks), [Jay Alammar](https://jalammar.github.io/)
+- **Fine-tuning & PEFT** — [Sebastian Raschka](https://magazine.sebastianraschka.com/), [Hugging Face TRL/PEFT team](https://huggingface.co/docs/trl), [Unsloth](https://unsloth.ai/)
+- **RAG** — [Anthropic Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval), [Pinecone Learn](https://www.pinecone.io/learn/), [Greg Kamradt](https://github.com/FullStackRetrieval-com/RetrievalTutorials)
+- **Quantization** — [Maarten Grootendorst](https://newsletter.maartengrootendorst.com/), [Tim Dettmers (QLoRA)](https://arxiv.org/abs/2305.14314)
+- **Inference** — [vLLM team](https://github.com/vllm-project/vllm), [Anyscale](https://www.anyscale.com/blog/continuous-batching-llm-inference)
+- **Agents** — [Anthropic *Building Effective Agents*](https://www.anthropic.com/research/building-effective-agents), [Lilian Weng](https://lilianweng.github.io/), [LangChain team](https://langchain-ai.github.io/langgraph/)
+- **Evaluation** — [Anthropic *Demystifying evals*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents), [Eugene Yan](https://eugeneyan.com/), [Inspect AI](https://inspect.ai-safety-institute.org.uk/)
+
+If your work is referenced and you'd like a link changed or credit corrected, open an issue and I'll fix it the same day.
+
+---
+
+## 📬 Share this roadmap
+
+If this helps you, please share it — it's the only "marketing" this project has:
+
+[![Share on X](https://img.shields.io/badge/Share_on-X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/intent/tweet?text=A%20free%204-month%20day-by-day%20AI%20Engineer%20Roadmap%3A%20LLM%20internals%2C%20fine-tuning%2C%20RAG%2C%20vLLM%2C%20agents%2C%20evals%20%E2%86%92&url=https%3A%2F%2Fgithub.com%2Fabhishekdubey331%2FAI-Engineer-RoadMap)
+[![Share on LinkedIn](https://img.shields.io/badge/Share_on-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fabhishekdubey331%2FAI-Engineer-RoadMap)
+[![Share on HN](https://img.shields.io/badge/Share_on-Hacker_News-FF6600?style=for-the-badge&logo=ycombinator&logoColor=white)](https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fgithub.com%2Fabhishekdubey331%2FAI-Engineer-RoadMap&t=AI%20Engineer%20Roadmap%3A%20a%20free%204-month%20day-by-day%20path)
+[![Share on Reddit](https://img.shields.io/badge/Share_on-Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Fabhishekdubey331%2FAI-Engineer-RoadMap&title=AI%20Engineer%20Roadmap%20%E2%80%94%20free%204-month%20day-by-day%20path)
+
+---
+
+## 📜 License
+
+Released under the [**MIT License**](./LICENSE) — free for personal, educational, and commercial use. Attribution appreciated but not required.
+
+---
+
+## 🎯 The final rule
 
 > Every week must produce a working artifact.
 > Every model change must have an eval.
@@ -199,8 +303,12 @@ The deliverable at the end of each week is the only thing that matters.
 
 That mindset is what separates "someone who can call Claude" from "someone who ships AI products."
 
----
+<div align="center">
 
-## License & contributions
+**Built for engineers who want to ship, not just learn.**
 
-This roadmap is open source. If you complete a week and have a better resource than what's listed, open a PR. If something is outdated, open an issue. Public roadmaps stay useful only when their community keeps them honest.
+If this saved you a year of self-study, [⭐ star the repo](https://github.com/abhishekdubey331/AI-Engineer-RoadMap/stargazers).
+
+[**🚀 Start Week 1**](./weeks/WEEK-01.md)
+
+</div>
