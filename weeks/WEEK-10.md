@@ -34,9 +34,9 @@ By Sunday night you should be able to:
 You touched the KV cache in Week 3. This week we go deeper, because PagedAttention only makes sense once you can see why naive KV-cache management is wasteful.
 
 **Read (90 min):**
-- [Introl — *KV Cache Optimization for Production LLMs*](https://introl.com/blog/kv-cache-optimization-memory-efficiency-production-llms-guide)
-- [Data Science Dojo — *Memory Is the Real Bottleneck: How Paged Attention Powers vLLM*](https://datasciencedojo.com/blog/understanding-paged-attention/)
 - [HF blog — *KV cache quantization*](https://huggingface.co/blog/kv-cache-quantization)
+- [Kwon et al. — *vLLM paper (PagedAttention)*](https://arxiv.org/abs/2309.06180) — the paper that defined modern KV-cache layout
+- [Aleksa Gordić — *Inside vLLM: Anatomy of a High-Throughput LLM Inference System*](https://www.aleksagordic.com/blog/vllm) — the 2025/26 successor to the old vLLM design doc; covers scheduler, prefix caching, chunked prefill, V1 architecture
 
 **Math check:** for Llama-3-8B (32 layers, 32 heads, `d_head=128`, GQA with 8 KV heads), how big is the KV cache per token in fp16? Per 8k-token request?
 
@@ -47,10 +47,11 @@ Approximately: `2 (K & V) × 32 layers × 8 KV heads × 128 d_head × 2 bytes �
 ### Day 2 — PagedAttention & vLLM internals
 
 **Read (90 min):**
-- [vLLM docs — *PagedAttention*](https://docs.vllm.ai/en/latest/design/paged_attention/)
-- [Hamza Elshafie — *Paged Attention from First Principles*](https://hamzaelshafie.bearblog.dev/paged-attention-from-first-principles/) — clear walk-through
-- [Mandeep Singh — *The Architecture Behind vLLM*](https://medium.com/@mandeep0405/the-architecture-behind-vllm-how-pagedattention-improves-memory-utilization-2f9b25272110)
-- [Runpod — *Introduction to vLLM and PagedAttention*](https://www.runpod.io/blog/introduction-to-vllm-and-pagedattention)
+- [Aleksa Gordić — *Inside vLLM* (deep technical walkthrough)](https://www.aleksagordic.com/blog/vllm) — required; replaces the historical PagedAttention design doc
+- [vLLM docs — *PagedAttention*](https://docs.vllm.ai/en/latest/design/paged_attention/) — historical reference (the page itself notes it no longer matches current code)
+- [Hamza Elshafie — *Paged Attention from First Principles*](https://hamzaelshafie.bearblog.dev/paged-attention-from-first-principles/) — clear "first principles" walk-through
+- [vLLM — *Automatic Prefix Caching* design doc](https://docs.vllm.ai/en/stable/design/prefix_caching/) — the table-stakes 2026 optimization; 50–90% hit rates on RAG/agent workloads
+- [vLLM — *Chunked Prefill*](https://docs.vllm.ai/en/latest/features/chunked_prefill/) — default-on in vLLM V1; the lever balancing TTFT vs throughput
 
 **Watch (30 min, optional):**
 - [Woosuk Kwon (vLLM creator) — *PagedAttention & vLLM* lecture slides (CMU LLM Systems 2025)](https://llmsystem.github.io/llmsystem2025spring/assets/files/llmsys-22-vLLM_woosuk_kwon-1f34697dbb1a1fb5b798daf6eff14b67.pdf)
@@ -67,7 +68,7 @@ Static batching: you wait until N requests arrive, batch them, run one pass, ret
 
 **Read (60 min):**
 - [Anyscale — *How Continuous Batching enables 23× throughput*](https://www.anyscale.com/blog/continuous-batching-llm-inference) — *the* canonical article
-- [Runpod — *vLLM: PagedAttention, Continuous Batching, and Deploying High-Throughput LLM Inference*](https://www.runpod.io/articles/guides/vllm-pagedattention-continuous-batching)
+- [BentoML — *LLM Inference Handbook*](https://bentoml.com/llm/inference-optimization/) — modern, vendor-neutral chapters on batching, paging, caching, scheduling
 
 ---
 
@@ -82,7 +83,7 @@ Static batching: you wait until N requests arrive, batch them, run one pass, ret
 ```bash
 pip install vllm
 
-vllm serve Qwen/Qwen2.5-Coder-1.5B-Instruct \
+vllm serve Qwen/Qwen3-Coder-1.5B-Instruct \
   --port 8000 \
   --max-model-len 4096 \
   --gpu-memory-utilization 0.9 \
@@ -94,7 +95,7 @@ Now call it like OpenAI:
 from openai import OpenAI
 c = OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
 print(c.chat.completions.create(
-    model="Qwen/Qwen2.5-Coder-1.5B-Instruct",
+    model="Qwen/Qwen3-Coder-1.5B-Instruct",
     messages=[{"role": "user", "content": "def fib(n):"}],
     stream=True,
 ))
@@ -127,22 +128,27 @@ Now actually push it.
 
 ---
 
-### Day 6 — Speculative decoding + the alternatives
+### Day 6 — Speculative decoding (EAGLE-3 / Medusa) + the alternatives
 
 **Read (60 min):**
+- [vLLM docs — *Speculative Decoding*](https://docs.vllm.ai/en/latest/features/spec_decode.html) — current API
 - [vLLM blog — *How Speculative Decoding Boosts vLLM Performance by up to 2.8×*](https://blog.vllm.ai/2024/10/17/spec-decode.html)
-- [BentoML — *Speculative decoding* (LLM Inference Handbook)](https://bentoml.com/llm/inference-optimization/speculative-decoding)
+- [BentoML — *Speculative decoding* (LLM Inference Handbook)](https://bentoml.com/llm/inference-optimization/speculative-decoding) — the diminishing-returns-vs-batch story
+- [SafeAILab/EAGLE](https://github.com/SafeAILab/EAGLE) — current SOTA speculative-decoding method (NeurIPS '25)
 - [NVIDIA — *An Introduction to Speculative Decoding*](https://developer.nvidia.com/blog/an-introduction-to-speculative-decoding-for-reducing-latency-in-ai-inference/)
 
 **Hands-on (45 min):**
-- Turn on speculative decoding in vLLM with `--speculative-config '{"method":"ngram","num_speculative_tokens":5,"prompt_lookup_max":4}'` (or use a small draft model)
-- Re-measure tokens/sec at batch size 1 and 8. The lift narrows as batch grows — see why in the BentoML article.
+- Turn on speculative decoding in vLLM with **EAGLE-3** (best) or **Medusa** (also supported); fall back to ngram / prompt-lookup if you don't have a matching draft model
+- Re-measure tokens/sec at batch size 1, 8, and 32. The lift narrows as batch grows — see the BentoML article.
 
-**Read (30 min) — alternatives tour:**
+**Read (30 min) — the 2026 alternatives tour:**
 - [TGI (Text Generation Inference) — *Overview*](https://huggingface.co/docs/text-generation-inference/index)
 - [Ollama — *Getting Started*](https://github.com/ollama/ollama#readme)
-- [llama.cpp — *Server*](https://github.com/ggerganov/llama.cpp/tree/master/examples/server)
-- [SGLang — *Quickstart*](https://docs.sglang.ai/start/install.html) (a strong vLLM competitor for some workloads)
+- [llama.cpp — *Server*](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
+- [SGLang docs](https://docs.sglang.ai/) — genuinely competitive: ~29% throughput advantage on H100, up to 6.4× on prefix-heavy workloads via RadixAttention. Required name-check in 2026.
+- [NVIDIA TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) — 1.4–2.1× faster than vLLM on H100/H200 for single-model production with engineering capacity. Know when it wins.
+- [llm-d](https://github.com/llm-d/llm-d) — Kubernetes-native vLLM-based serving (good pointer for the K8s stretch goal)
+- [LMCache](https://github.com/LMCache/LMCache) — production KV-cache layer; drops TTFT from 11s to 1.5s on 128k prompts at GKE/CoreWeave
 
 ---
 
@@ -188,14 +194,16 @@ vllm-server/
   - Throughput (tok/s, req/s)
   - TTFT p50/p95
   - ITL p50/p95
-- A `backends_comparison.md` running the same model on at least 2 of: vLLM / TGI / llama.cpp server / Ollama. Tabulate throughput + p50 TTFT.
+- A `backends_comparison.md` running the same model on at least 2 of: vLLM / **SGLang** / TGI / llama.cpp server / Ollama. Tabulate throughput + p50 TTFT. **SGLang or TensorRT-LLM is required as one of the comparison points** — knowing only vLLM in 2026 dates you.
+- **Prefix-cache hit-rate** measurements from `/metrics` (required, not stretch) — this is the most impactful single optimization in 2026
 - A `final_report.md` with the knee-of-the-curve analysis and a 1-paragraph "what I'd change for prod"
 
 ### Stretch
 
-- Add speculative decoding and report the lift at different batch sizes
-- Add prefix-cache hit-rate measurements (vLLM exposes this)
-- Add a Kubernetes manifest (Deployment + Service + HPA) — useful for resume signal even if you don't run it
+- Speculative decoding with **EAGLE-3 or Medusa** (not just ngram) — report the lift at batch 1, 8, 32
+- KV-cache fp8 (`--kv-cache-dtype fp8`) — measure the throughput delta
+- A Kubernetes manifest (Deployment + Service + HPA) or an [llm-d](https://github.com/llm-d/llm-d) deploy — useful for resume signal even if you don't run it
+- Disaggregated prefill/decode (P/D split) — see vLLM's [disagg docs](https://docs.vllm.ai/en/latest/features/disagg_prefill/)
 
 ---
 
@@ -209,23 +217,27 @@ vllm-server/
 - [vLLM blog — *Speculative Decoding*](https://blog.vllm.ai/2024/10/17/spec-decode.html)
 
 **Concepts**
+- [Aleksa Gordić — *Inside vLLM*](https://www.aleksagordic.com/blog/vllm) — the SOTA-author deep walkthrough
 - [Anyscale — *Continuous Batching*](https://www.anyscale.com/blog/continuous-batching-llm-inference)
 - [Hamza Elshafie — *Paged Attention from First Principles*](https://hamzaelshafie.bearblog.dev/paged-attention-from-first-principles/)
-- [Data Science Dojo — *Memory Is the Real Bottleneck*](https://datasciencedojo.com/blog/understanding-paged-attention/)
-- [Mandeep Singh — *Architecture Behind vLLM*](https://medium.com/@mandeep0405/the-architecture-behind-vllm-how-pagedattention-improves-memory-utilization-2f9b25272110)
-- [Introl — *KV Cache Optimization*](https://introl.com/blog/kv-cache-optimization-memory-efficiency-production-llms-guide)
+- [BentoML — *LLM Inference Handbook*](https://bentoml.com/llm/inference-optimization/) — vendor-neutral chapters on every topic this week
+- [llm-d — *KV-Cache Wins You Can See*](https://llm-d.ai/blog/kvcache-wins-you-can-see) — real production prefix-cache hit-rate data
 
 **Speculative decoding**
 - [PyTorch — *A Hitchhiker's Guide to Speculative Decoding*](https://pytorch.org/blog/hitchhikers-guide-speculative-decoding/)
 - [BentoML — *Speculative decoding*](https://bentoml.com/llm/inference-optimization/speculative-decoding)
+- [SafeAILab/EAGLE](https://github.com/SafeAILab/EAGLE) — current SOTA, NeurIPS '25
 - [NVIDIA — *Intro to Speculative Decoding*](https://developer.nvidia.com/blog/an-introduction-to-speculative-decoding-for-reducing-latency-in-ai-inference/)
-- [Uplatz — *The Convergence of Concurrency: Continuous Batching and Speculative Decoding*](https://uplatz.com/blog/the-convergence-of-concurrency-resolving-the-contention-between-continuous-batching-and-speculative-decoding-in-large-scale-llm-inference/)
+- [Red Hat — *Performance improvements with speculative decoding in vLLM (Apr 2026)*](https://developers.redhat.com/articles/2026/04/16/performance-improvements-speculative-decoding-vllm-gpt-oss)
 
-**Alternatives**
+**Alternatives & production stacks**
 - [Hugging Face TGI](https://huggingface.co/docs/text-generation-inference/index)
 - [Ollama](https://github.com/ollama/ollama)
-- [llama.cpp server](https://github.com/ggerganov/llama.cpp/tree/master/examples/server)
-- [SGLang](https://docs.sglang.ai/) — a strong vLLM competitor
+- [llama.cpp server](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
+- [SGLang](https://docs.sglang.ai/) — a strong vLLM competitor (RadixAttention)
+- [NVIDIA TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) — production-grade single-model serving
+- [llm-d](https://github.com/llm-d/llm-d) — Kubernetes-native vLLM
+- [LMCache](https://github.com/LMCache/LMCache) — production KV-cache layer
 
 **Papers (skim)**
 - [Kwon et al. — *Efficient Memory Management for LLM Serving with PagedAttention*](https://arxiv.org/abs/2309.06180) — the vLLM paper
