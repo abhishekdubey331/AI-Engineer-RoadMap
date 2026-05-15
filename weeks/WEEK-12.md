@@ -31,9 +31,9 @@ By Sunday night you should be able to:
 ### Day 1 — The three caches
 
 **Read (75 min):**
-- [Akshay Ghalme — *How LLM Caching Actually Works — Prompt Cache, Semantic Cache & the CDN Patterns Nobody Documents (2026)*](https://akshayghalme.com/blogs/how-llm-caching-actually-works/) — the best overview
-- [Spheron — *Semantic Caching for LLM Inference: GPTCache, Redis Vector Cache, and Prompt Cache Setup (2026)*](https://www.spheron.network/blog/semantic-cache-llm-inference-gpu-cloud/)
-- [CallSphere — *LLM Caching Strategies for Cost Optimization: Prompt, Semantic, and KV Caching*](https://callsphere.ai/blog/llm-caching-strategies-cost-optimization-2026)
+- [Helicone — *Effective LLM Caching*](https://www.helicone.ai/blog/effective-llm-caching) — the most thorough vendor-engineering overview
+- [AWS Database Blog — *Optimize LLM response costs and latency with effective caching*](https://aws.amazon.com/blogs/database/optimize-llm-response-costs-and-latency-with-effective-caching/) — vendor-neutral architectural patterns
+- [Redis — *Vector database*](https://redis.io/docs/latest/develop/get-started/vector-database/) — the cache backend you'll likely use in production
 
 **The taxonomy:**
 
@@ -50,20 +50,16 @@ Also: **provider-side prompt caching** (Anthropic's `cache_control`, OpenAI's pr
 ### Day 2 — Build a semantic cache
 
 **Read (45 min):**
-- [GPTCache — *Quick start*](https://gptcache.readthedocs.io/en/latest/usage.html)
+- [GPTCache — *Quick start*](https://gptcache.readthedocs.io/en/latest/usage.html) — **note:** GPTCache has had near-zero recent commits and is effectively maintenance-mode. Still teaches the right pattern; for production prefer LangChain's `RedisSemanticCache`, [LiteLLM's built-in cache](https://docs.litellm.ai/docs/caching), or Portkey.
 - [zilliztech/GPTCache (README)](https://github.com/zilliztech/GPTCache)
-- [Bhavishya Pandit — *GPTCache: A practical guide*](https://bhavishyapandit9.substack.com/p/gptcache-a-practical-guide)
+- [GPT Semantic Cache paper](https://arxiv.org/abs/2411.05276) — the design rationale
 
 **Hands-on (90 min):**
-- Set up GPTCache wrapping your OpenAI/vLLM client:
-  ```python
-  from gptcache import cache
-  from gptcache.adapter import openai
-  cache.init()  # default: in-memory + a small embedding model
-  ```
-- Or hand-roll one: SQLite + a sentence-transformer + cosine threshold of ~0.95
+- Hand-roll a semantic cache: SQLite (or Redis) + a sentence-transformer + cosine threshold ~0.95 — this is what production teams actually deploy
+- Or use LiteLLM Proxy's built-in cache (one config line)
 - Build a small benchmark: 200 queries, where ~30% are paraphrases of earlier queries
 - Measure: hit rate, p50 latency on hit vs miss
+- **Try an adversarial paraphrase set** — engineer 10 queries that *look* paraphrased but should return different answers ("how do I delete a user?" vs "how do I delete *the* user?"). See what your threshold does. This failure mode is real.
 
 ---
 
@@ -72,9 +68,9 @@ Also: **provider-side prompt caching** (Anthropic's `cache_control`, OpenAI's pr
 This is the cheapest, easiest cache win in production. It's also one most teams forget.
 
 **Read (60 min):**
-- [Anthropic — *Prompt caching*](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)
+- [Anthropic — *Prompt caching*](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) — note the 2025 addition of a **1-hour cache TTL tier** alongside the original 5-minute one; the cost math has shifted
 - [OpenAI — *Prompt caching*](https://platform.openai.com/docs/guides/prompt-caching)
-- [Introl — *Prompt Caching Infrastructure*](https://introl.com/blog/prompt-caching-infrastructure-llm-cost-latency-reduction-guide-2025)
+- [Anthropic cookbook — *Prompt caching examples*](https://github.com/anthropics/anthropic-cookbook/tree/main/misc) — concrete patterns
 
 **Hands-on (45 min):**
 - Take a long system prompt (5k+ tokens) you might reuse — a system prompt with style rules, a docs corpus, a tool list
@@ -86,8 +82,11 @@ This is the cheapest, easiest cache win in production. It's also one most teams 
 ### Day 4 — Model routing & fallbacks
 
 **Read (60 min):**
-- [Martian — *Model Router patterns*](https://withmartian.com/) (browse their docs; their entire product is the router pattern)
-- [RouteLLM project](https://github.com/lm-sys/RouteLLM)
+- [LiteLLM — *Routing*](https://docs.litellm.ai/docs/routing) — the de facto OSS routing implementation in 2026; this is what most teams actually ship
+- [Not-Diamond — *awesome-ai-model-routing*](https://github.com/Not-Diamond/awesome-ai-model-routing) — curated, community-maintained list
+- [NotDiamond](https://www.notdiamond.ai/) — hosted routing-as-a-product
+- [Martian Router](https://route.withmartian.com/) — another hosted router
+- [RouteLLM (LMSYS)](https://github.com/lm-sys/RouteLLM) — reference research project (note: last update Aug 2024)
 - [LangChain — *Routing*](https://python.langchain.com/docs/how_to/routing/)
 
 **Patterns to implement:**
@@ -117,12 +116,15 @@ This is the cheapest, easiest cache win in production. It's also one most teams 
 
 This is "make it not crash" day.
 
-**Read (75 min):**
-- [LiteLLM — *Proxy Server*](https://docs.litellm.ai/docs/simple_proxy) — read the features list; this is everything you should ship
+**Read (90 min):**
+- [LiteLLM — *Proxy Server*](https://docs.litellm.ai/docs/simple_proxy) — **the** OSS gateway most production teams run in 2026. Read the features list as the reference implementation your hand-rolled gateway competes with.
+- [LiteLLM — *Caching*](https://docs.litellm.ai/docs/caching), [*Routing*](https://docs.litellm.ai/docs/routing), [*Fallbacks*](https://docs.litellm.ai/docs/proxy/reliability)
 - [Tenacity — *Retrying*](https://tenacity.readthedocs.io/) — the standard Python retry library
-- [Anthropic — *Mitigating jailbreaks*](https://docs.claude.com/en/docs/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks)
+- [Anthropic — *Mitigating jailbreaks*](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks)
 - [Microsoft Presidio (PII redaction)](https://microsoft.github.io/presidio/) — solid open-source PII scrubber
-- [OWASP — *LLM API Security*](https://genai.owasp.org/llmrisk/) — the broader threat model
+- [OWASP — *GenAI Top 10 (2025)*](https://genai.owasp.org/llm-top-10/) — the current canonical threat model
+- [Meta Llama Guard / Purple-Llama](https://github.com/meta-llama/PurpleLlama) — input/output safety classifiers
+- [NVIDIA NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails) — programmable guardrails framework
 
 **Hands-on (90 min): add to your gateway**
 - **Rate limits** per API key (a token bucket; `slowapi` is fine)
@@ -136,13 +138,15 @@ This is "make it not crash" day.
 
 ### Day 6 — Cost & latency dashboards
 
-**Read (30 min):**
-- [Helicone — *Why we built an LLM observability tool*](https://www.helicone.ai/blog) (browse a few posts)
-- [Langfuse — *Pricing & cost tracking*](https://langfuse.com/docs/integrations/llm-cost)
-- [OpenAI — *Usage* (UI screenshots, copy the rough shape)](https://platform.openai.com/usage)
+**Read (45 min):**
+- [Langfuse — *Pricing & cost tracking*](https://langfuse.com/docs/integrations/llm-cost) — what you'll wire up in Week 15
+- [OpenTelemetry — *GenAI semantic conventions*](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — the emerging standard for LLM telemetry
+- [Traceloop OpenLLMetry](https://github.com/traceloop/openllmetry) — drop-in OTel instrumentation for LLM SDKs
+- [Helicone — *Effective LLM Caching*](https://www.helicone.ai/blog/effective-llm-caching) — the operating-numbers blog
 
 **Hands-on (~2 hr):**
 - Emit Prometheus metrics from your gateway: `requests_total`, `latency_ms_histogram`, `tokens_in_total`, `tokens_out_total`, `cache_hit_total`, `cost_usd_total`
+- (Stretch) Also emit OpenTelemetry GenAI spans so the same telemetry feeds Langfuse / Phoenix / Honeycomb
 - Provision a Grafana dashboard with:
   - p50 / p95 / p99 latency per route
   - Cost per hour per model
@@ -175,14 +179,15 @@ POST /admin/cache/clear
 ### Required behaviors
 
 - **Routing:** based on a request header (`X-Task-Type: simple_qa | code_gen | complex_reason`) or auto-classify
-- **Semantic cache:** GPTCache or hand-rolled; configurable threshold; cache hit returns in < 50ms
-- **Provider-side prompt cache:** opt-in via a header / config
+- **Semantic cache:** hand-rolled (Redis + sentence-transformer); configurable threshold; cache hit returns in < 50ms
+- **Provider-side prompt cache:** opt-in via a header / config (Anthropic 1-hour tier or OpenAI prompt caching)
 - **Retries + circuit breaker:** misbehaving provider gets skipped for N seconds
 - **PII redaction:** Presidio in the request path; redacted events go to an audit log
 - **Rate limits** per API key (token bucket; configurable)
 - **Structured logs**: JSON to stdout *and* SQLite (or Postgres) for queryability
 - **Cost tracking:** per request, in USD, using current prices hardcoded with a comment
 - **Prometheus** `/metrics` + Grafana dashboard JSON in the repo
+- **LiteLLM comparison:** alongside `app/`, include a `litellm_proxy/config.yaml` that achieves the same routing+caching behaviour. Write a 1-page `vs-litellm.md` in `reports/` honestly comparing your hand-rolled gateway to the LiteLLM config (LOC, features, where each wins). Shows you know both worlds — most teams will end up running LiteLLM.
 
 ### Deliverable
 
@@ -218,33 +223,40 @@ ai-gateway/
 ## Curated resources
 
 **Caching**
-- [Akshay Ghalme — *How LLM Caching Actually Works (2026)*](https://akshayghalme.com/blogs/how-llm-caching-actually-works/)
-- [Spheron — *Semantic Caching, GPTCache, Redis Vector Cache*](https://www.spheron.network/blog/semantic-cache-llm-inference-gpu-cloud/)
-- [CallSphere — *LLM Caching Strategies for Cost Optimization*](https://callsphere.ai/blog/llm-caching-strategies-cost-optimization-2026)
-- [GPTCache docs](https://gptcache.readthedocs.io/en/latest/)
-- [zilliztech/GPTCache (GitHub)](https://github.com/zilliztech/GPTCache)
-- [Anthropic — *Prompt caching*](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)
+- [Helicone — *Effective LLM Caching*](https://www.helicone.ai/blog/effective-llm-caching) — vendor engineering blog with real numbers
+- [AWS Database Blog — *Optimize LLM response costs and latency with effective caching*](https://aws.amazon.com/blogs/database/optimize-llm-response-costs-and-latency-with-effective-caching/)
+- [Redis — *Vector database*](https://redis.io/docs/latest/develop/get-started/vector-database/)
+- [GPTCache docs](https://gptcache.readthedocs.io/en/latest/) — for the algorithm; the library itself is in maintenance mode
+- [GPT Semantic Cache paper](https://arxiv.org/abs/2411.05276)
+- [Anthropic — *Prompt caching*](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) (incl. 1-hour TTL tier)
 - [OpenAI — *Prompt caching*](https://platform.openai.com/docs/guides/prompt-caching)
-- [Introl — *Prompt Caching Infrastructure*](https://introl.com/blog/prompt-caching-infrastructure-llm-cost-latency-reduction-guide-2025)
 
 **Routing**
-- [RouteLLM (LMSYS)](https://github.com/lm-sys/RouteLLM)
+- [LiteLLM — *Routing*](https://docs.litellm.ai/docs/routing) — the OSS de facto
+- [Not-Diamond — *awesome-ai-model-routing*](https://github.com/Not-Diamond/awesome-ai-model-routing) — curated list
+- [NotDiamond](https://www.notdiamond.ai/), [Martian Router](https://route.withmartian.com/) — hosted products
+- [RouteLLM (LMSYS)](https://github.com/lm-sys/RouteLLM) — reference research project
 - [LangChain — *Routing*](https://python.langchain.com/docs/how_to/routing/)
-- [DEV — *Top LLM Gateways That Support Semantic Caching in 2026*](https://dev.to/debmckinney/top-llm-gateways-that-support-semantic-caching-in-2026-3dho)
-- [Martian — *Model Router patterns*](https://withmartian.com/)
 
-**Production gateways (read, then maybe use)**
-- [LiteLLM Proxy](https://docs.litellm.ai/docs/simple_proxy)
+**Production gateways**
+- [LiteLLM Proxy](https://docs.litellm.ai/docs/simple_proxy) — **the** OSS gateway in 2026
 - [Portkey](https://portkey.ai/docs/welcome/introduction)
 - [Kong AI Gateway](https://docs.konghq.com/hub/kong-inc/ai-proxy/)
+- [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/)
 - [Helicone](https://docs.helicone.ai/)
 
-**Hardening**
+**Observability conventions (preview for Week 15)**
+- [OpenTelemetry — *GenAI semantic conventions*](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [Traceloop OpenLLMetry](https://github.com/traceloop/openllmetry)
+
+**Hardening / security**
 - [Tenacity](https://tenacity.readthedocs.io/)
 - [SlowAPI (rate limits for FastAPI)](https://slowapi.readthedocs.io/)
 - [Microsoft Presidio (PII)](https://microsoft.github.io/presidio/)
-- [OWASP — *LLM API Security*](https://genai.owasp.org/llmrisk/)
-- [Anthropic — *Mitigating jailbreaks*](https://docs.claude.com/en/docs/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks)
+- [OWASP — *GenAI Top 10 (2025)*](https://genai.owasp.org/llm-top-10/)
+- [Meta Llama Guard / Purple-Llama](https://github.com/meta-llama/PurpleLlama)
+- [NVIDIA NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails)
+- [Anthropic — *Mitigating jailbreaks*](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks)
 
 ---
 

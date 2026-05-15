@@ -80,7 +80,7 @@ Generated code can do *anything*. You must run it in isolation.
 - [HumanEval — *execution.py*](https://github.com/openai/human-eval/blob/master/human_eval/execution.py) — the resource-limited subprocess pattern
 - [Docker docs — *Resource constraints*](https://docs.docker.com/config/containers/resource_constraints/)
 - [BigCodeBench — *evaluate*](https://github.com/bigcode-project/bigcodebench/blob/main/bigcodebench/evaluate.py)
-- [Inspect AI — *Sandboxing*](https://inspect.ai-safety-institute.org.uk/agents/sandboxing.html) — modern, eval-framework-grade
+- [Inspect AI — *Sandboxing*](https://inspect.aisi.org.uk/agents/sandboxing.html) — modern, eval-framework-grade
 
 **Sandbox checklist:**
 - Run in a subprocess (never `exec()` in your test process)
@@ -116,26 +116,36 @@ Generated code can do *anything*. You must run it in isolation.
 
 **Hands-on (~2.5 hr):**
 - Make the harness accept **multiple datasets**:
-  - HumanEval (Python, function-writing)
+  - HumanEval (Python, function-writing) — saturated and contamination-suspect by 2026; include as a baseline only
+  - **LiveCodeBench** (continuously refreshed from LeetCode/AtCoder/CodeForces, contamination-free) — required in 2026
+  - **BigCodeBench-Hard** (148-task subset) — the actually-discriminating split
   - MBPP (Python, easier function-writing)
-  - At least 10 hand-written tasks from *your* Week-7 task domain (e.g., design-to-code components, SQL queries, etc.) — with tests
+  - At least 10 hand-written tasks from *your* Week-7 task domain — with tests
 - Plug in 3 models behind a common interface (could be OpenAI client API → vLLM server / OpenAI / Anthropic / Ollama)
 - Run the matrix: 3 models × 3 datasets
 
+**Contamination check (required):** for any HumanEval/MBPP number, run a sanity check — count what % of model outputs are token-level near-matches to the canonical solution. If >25%, the number is almost certainly contamination-inflated and you should report LiveCodeBench / BigCodeBench-Hard alongside.
+
 ---
 
-### Day 6 — SWE-bench: the next-level eval
+### Day 6 — SWE-bench-Verified, Aider Polyglot: the next-level evals
 
-HumanEval tests function-writing. **SWE-bench** tests "given a real GitHub issue + the repo, generate a patch that resolves it." This is the eval that separates models from agents. Pass rates on full SWE-bench are still in the 30–60% range as of 2026, even for the strongest agents.
+HumanEval tests function-writing. The 2026 benchmarks that actually decide what frontier labs report:
+
+- **SWE-bench-Verified (500 human-validated GitHub issues)** — the canonical "real-world coding" eval. Every Claude / GPT / Gemini coding-agent paper reports against this. Pass rates climbed from 40% → 80%+ between 2024 and 2026.
+- **Aider Polyglot (225 Exercism problems, 6 languages)** — tests file-editing in an agentic loop; closer to actual coding than HumanEval.
+- **Terminal-Bench 2.0** — agentic-shell tasks.
 
 **Read (60 min):**
-- [SWE-bench — *official site*](https://www.swebench.com/)
-- [Runloop — *Understanding LLM Code Benchmarks: From HumanEval to SWE-bench*](https://runloop.ai/blog/understanding-llm-code-benchmarks-from-humaneval-to-swe-bench)
-- [Adnan Masood — *Code Generation and Repository-Level Software Engineering Benchmarks*](https://medium.com/@adnanmasood/code-generation-repository-level-software-engineering-benchmarks-a-field-guide-to-llm-benchmarks-330bc3015d80) (field guide)
+- [OpenAI — *Introducing SWE-bench Verified*](https://openai.com/index/introducing-swe-bench-verified/) — the 500-task human-cleaned subset
+- [SWE-bench — *official site* + Verified leaderboard](https://www.swebench.com/) + [Verified page](https://www.swebench.com/verified.html)
+- [SWE-bench — *Submission guide*](https://www.swebench.com/SWE-bench/guides/submissions/)
+- [Aider Polyglot benchmark](https://github.com/Aider-AI/polyglot-benchmark) + [Aider leaderboard](https://aider.chat/docs/leaderboards/)
+- [Runloop — *Understanding LLM Code Benchmarks*](https://runloop.ai/blog/understanding-llm-code-benchmarks-from-humaneval-to-swe-bench)
 
 **Hands-on (60 min):**
-- Don't try to run full SWE-bench (it's huge). Instead, run **SWE-bench-Lite** (300 instances) on a couple of cheap problems. Inspect one trajectory in detail. Notice everything that has to go right: identify the right file, edit the right region, not break other tests, produce a patch that applies cleanly.
-- You will return to this in Week 14 when you build an actual agent.
+- Don't try to run full SWE-bench (it's huge and costly). Instead, run **SWE-bench-Verified** on ~10 instances using the official harness; pick easy/medium difficulty. Inspect one trajectory in detail: identify the right file, edit the right region, don't break other tests, produce a patch that applies cleanly.
+- You will return to this in Week 16 — your capstone is **a coding agent benchmarked on SWE-bench-Verified-Lite**, so this week's work is directly load-bearing.
 
 ---
 
@@ -143,10 +153,12 @@ HumanEval tests function-writing. **SWE-bench** tests "given a real GitHub issue
 
 When you don't have tests (e.g., "is this code readable?"), an LLM judge is the next best thing. Done badly, judges are biased and noisy. Done well, they're shockingly useful.
 
-**Read (45 min):**
-- [Eugene Yan — *LLM-as-judge for evaluation*](https://eugeneyan.com/writing/llm-evaluators/) — the best practical guide on the internet
+**Read (60 min):**
+- [Hamel Husain — *LLM Evals FAQ*](https://hamel.dev/blog/posts/evals-faq/) — the single best practitioner reference; mandatory
+- [Hamel Husain — *LLM-as-a-Judge*](https://hamel.dev/blog/posts/llm-judge/) — paired companion read
+- [Eugene Yan — *LLM-as-judge for evaluation*](https://eugeneyan.com/writing/llm-evaluators/) — the original deep guide
 - [Hugging Face — *Evaluation cookbook*](https://huggingface.co/blog/llm-as-a-judge)
-- [Anthropic — *Evaluating outputs*](https://docs.claude.com/en/docs/test-and-evaluate/develop-tests)
+- [Anthropic — *Evaluating outputs*](https://platform.claude.com/docs/en/test-and-evaluate/develop-tests)
 
 **Patterns that work**
 - Pairwise comparison (A vs B), not absolute scoring
@@ -171,7 +183,7 @@ $ code-eval run --model qwen-coder-1.5b --tasks humaneval --n-samples 10
 pass@1 = 0.41
 pass@10 = 0.58
 
-$ code-eval run --model my-finetuned-v2 --tasks tasks/design-to-code.jsonl --n-samples 5
+$ code-eval run --model my-finetuned-v2 --tasks tasks/mytask.jsonl --n-samples 5
 [##############################] 50/50 tasks
 pass@1 = 0.66
 pass@5 = 0.84
@@ -186,15 +198,16 @@ $ code-eval report --output report.md
 - Sandboxed execution (Docker `--network=none`, resource limits, timeout)
 - pass@k with the correct hypergeometric estimator
 - Backends: at least one local (Ollama or vLLM) + at least one hosted (OpenAI or Anthropic)
-- Datasets: HumanEval **and** a custom dataset from your Week-7 task
+- Datasets: HumanEval (baseline) + **at least one of LiveCodeBench or BigCodeBench-Hard** (contamination-resistant; required for any reported HumanEval number to be credible) + your custom Week-7 task dataset
 - A `report.md` generator that produces a model × dataset table
-- LLM-as-judge mode for tasks without runnable tests
+- LLM-as-judge mode for tasks without runnable tests, with **two judges from different model families** + a calibration step against ≥10 human-labeled examples
 - Robust failure handling: timeouts, syntax errors, import errors all bucketed in the report
 
 ### Stretch
 
-- Add MBPP and BigCodeBench
-- Add SWE-bench-Lite (just a handful of instances; full runs are expensive)
+- Add MBPP
+- Add a SWE-bench-Verified mini run (~10 instances; the full set is expensive) — load-bearing for Week 16
+- Add Aider Polyglot
 - Cache completions to disk so re-runs are free
 - Export to W&B or MLflow for nicer dashboards
 
@@ -210,24 +223,31 @@ $ code-eval report --output report.md
 - [Runloop — *HumanEval → SWE-bench*](https://runloop.ai/blog/understanding-llm-code-benchmarks-from-humaneval-to-swe-bench)
 
 **Benchmarks (the catalog)**
-- [openai/human-eval](https://github.com/openai/human-eval)
+- [SWE-bench Verified](https://www.swebench.com/verified.html) + [submission guide](https://www.swebench.com/SWE-bench/guides/submissions/) — the canonical 2026 coding-agent eval
+- [Aider Polyglot](https://github.com/Aider-AI/polyglot-benchmark) + [Aider leaderboard](https://aider.chat/docs/leaderboards/)
+- [LiveCodeBench](https://livecodebench.github.io/) — contamination-free, continuously refreshed
+- [BigCodeBench](https://github.com/bigcode-project/bigcodebench) (use the Hard subset)
+- [openai/human-eval](https://github.com/openai/human-eval) — saturated and contamination-suspect; baseline only
 - [google-research/mbpp](https://github.com/google-research/google-research/tree/master/mbpp)
-- [BigCodeBench](https://github.com/bigcode-project/bigcodebench)
-- [LiveCodeBench](https://livecodebench.github.io/)
-- [SWE-bench](https://www.swebench.com/) — and [SWE-bench-Lite](https://www.swebench.com/lite.html)
-- [TerminalBench](https://www.tbench.ai/) — agentic-shell benchmark, increasingly cited
-- [BIG-bench, MMLU, etc.](https://github.com/google/BIG-bench) — for general LLMs, not code
+- [TerminalBench](https://www.tbench.ai/) (Terminal-Bench 2.0)
+- [BIG-Bench Hard](https://github.com/suzgunmirac/BIG-Bench-Hard) — the still-discriminating subset (BIG-bench is legacy)
+
+**Practitioner reading**
+- [Hamel Husain — *LLM Evals FAQ*](https://hamel.dev/blog/posts/evals-faq/) — required
+- [Hamel Husain — *LLM-as-a-Judge*](https://hamel.dev/blog/posts/llm-judge/)
+- [Eugene Yan — *LLM Evaluators*](https://eugeneyan.com/writing/llm-evaluators/)
 
 **Eval frameworks**
-- [Inspect AI](https://inspect.ai-safety-institute.org.uk/) — modern, sandboxed, agent-aware
+- [Inspect AI](https://inspect.aisi.org.uk/) — modern, sandboxed, agent-aware
 - [EleutherAI — *lm-evaluation-harness*](https://github.com/EleutherAI/lm-evaluation-harness)
 - [DeepEval](https://docs.confident-ai.com/)
 - [promptfoo](https://www.promptfoo.dev/) — fast eval for prompts, lightweight
 
 **LLM-as-judge**
+- [Hamel Husain — *LLM-as-a-Judge*](https://hamel.dev/blog/posts/llm-judge/)
 - [Eugene Yan — *LLM Evaluators*](https://eugeneyan.com/writing/llm-evaluators/)
 - [HF blog — *LLM as a Judge*](https://huggingface.co/blog/llm-as-a-judge)
-- [Anthropic — *Evaluating outputs*](https://docs.claude.com/en/docs/test-and-evaluate/develop-tests)
+- [Anthropic — *Evaluating outputs*](https://platform.claude.com/docs/en/test-and-evaluate/develop-tests)
 
 **Papers (skim)**
 - [Chen et al. — *Evaluating Large Language Models Trained on Code* (HumanEval)](https://arxiv.org/abs/2107.03374)

@@ -30,10 +30,12 @@ By Sunday night you should be able to:
 
 ### Day 1 — The four pillars of agent eval
 
-**Read (75 min):**
-- [Anthropic — *Demystifying evals for AI agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) — must read
-- [Galileo — *Agent Evaluation Framework: Metrics, Rubrics, Benchmarks*](https://galileo.ai/blog/agent-evaluation-framework-metrics-rubrics-benchmarks)
-- [IBM — *What is AI Agent Evaluation?*](https://www.ibm.com/think/topics/ai-agent-evaluation)
+**Read (90 min):**
+- [Anthropic — *Demystifying evals for AI agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) — **must read**
+- [Hamel Husain — *Your AI Product Needs Evals*](https://hamel.dev/blog/posts/evals/) — **must read** (the most-cited practitioner reference)
+- [Hamel Husain — *A Field Guide to Rapidly Improving AI Products*](https://hamel.dev/blog/posts/field-guide/) — operating playbook
+- [Hamel Husain — *LLM-as-a-Judge*](https://hamel.dev/blog/posts/llm-judge/) — for the trajectory-quality scoring you'll do on Day 7
+- [Galileo — *Agent Evaluation Framework*](https://galileo.ai/blog/agent-evaluation-framework-metrics-rubrics-benchmarks) — useful framing; vendor-flavored, read with that in mind
 
 **The four pillars:**
 
@@ -65,7 +67,7 @@ Build `agent_eval/` with:
     "difficulty": "easy"
   }
   ```
-- Mix categories: bug fix, refactor, new feature, doc update, test writing, design-to-code
+- Mix categories: bug fix, refactor, new feature, doc update, test writing, code-review feedback application
 - Mix difficulties: easy / medium / hard
 
 - `run.py` — runs every task N times against your Week-14 agent, captures full traces
@@ -85,7 +87,7 @@ Build `agent_eval/` with:
 - [Langfuse — *Integrations: LangChain / LangGraph*](https://langfuse.com/docs/integrations/langchain/tracing)
 - [Langfuse — *Evaluation*](https://langfuse.com/docs/evaluation/overview)
 
-**Why Langfuse:** it's the strongest OSS option with feature parity between self-host and cloud; transparent volume-based pricing; Apache 2.0 license. Read also the [Langfuse-vs-Phoenix comparison](https://www.zenml.io/blog/langfuse-vs-phoenix) — Phoenix and LangSmith are both fine alternatives; pick one and commit.
+**Be opinionated: use Langfuse.** OSS, self-hostable, transparent volume-based pricing, Apache 2.0, feature parity between self-host and cloud. Reach for **LangSmith** instead only if you're committed to LangChain's cloud; reach for **Arize Phoenix** only if you live in OpenTelemetry-native infra. The constant "pick whatever you like" advice is paralysis for juniors — pick Langfuse, ship, swap later if you have a real reason. See the [Langfuse-vs-Phoenix comparison](https://www.zenml.io/blog/langfuse-vs-phoenix) for the trade-off.
 
 **Hands-on (90 min):**
 - Self-host Langfuse: `docker compose` (their repo has a compose file)
@@ -122,8 +124,7 @@ Traces alone are noise. Tags + annotations turn them into intelligence.
 **Read (60 min):**
 - [Langfuse — *Cost tracking*](https://langfuse.com/docs/integrations/llm-cost)
 - [Langfuse — *Datasets & experiments*](https://langfuse.com/docs/datasets/overview) — used for regression suites
-- [DigitalApplied — *Agent Observability: LangSmith, Langfuse, Arize (2026)*](https://www.digitalapplied.com/blog/agent-observability-platforms-langsmith-langfuse-arize-2026)
-- [Maxim — *Top 5 LLM Observability Platforms for 2026*](https://www.getmaxim.ai/articles/top-5-llm-observability-platforms-for-2026/)
+- [OpenTelemetry — *GenAI semantic conventions*](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — the emerging cost / latency telemetry standard
 
 **Hands-on:**
 - Make your eval suite double as a **regression suite** in Langfuse
@@ -137,17 +138,18 @@ Traces alone are noise. Tags + annotations turn them into intelligence.
 Beyond your custom tasks, run your agent against a real public benchmark to know where it stands.
 
 **Read (45 min):**
-- [Inspect AI — *Getting started*](https://inspect.ai-safety-institute.org.uk/)
-- [Inspect AI — *Solvers and Agents*](https://inspect.ai-safety-institute.org.uk/agents.html)
-- [Inspect AI — *Sandboxing*](https://inspect.ai-safety-institute.org.uk/agents/sandboxing.html)
+- [Inspect AI — *Getting started*](https://inspect.aisi.org.uk/)
+- [Inspect AI — *Solvers and Agents*](https://inspect.aisi.org.uk/agents.html)
+- [Inspect AI — *Sandboxing*](https://inspect.aisi.org.uk/agents/sandboxing.html)
 - [Phil Schmid — *AI Agent Benchmark Compendium*](https://github.com/philschmid/ai-agent-benchmark-compendium) — pick one benchmark suited to your domain
 
 **Hands-on (~2 hr):**
-- Run your agent against either:
-  - **SWE-bench-Lite** (10 instances — full run is expensive)
-  - **TerminalBench** (agentic-shell tasks)
-  - **GAIA** (general assistant, a few examples)
-- Save the results. Even a low score here is portfolio-worthy because you know how to do it.
+- Run your agent against **one** of these (pick to match your Week-16 capstone direction):
+  - **SWE-bench-Verified (Lite subset, ~10 instances)** — for the coding-agent capstone. Required for the W16 path.
+  - **Terminal-Bench 2.0** (agentic-shell tasks)
+  - **TAU2-bench** ([sierra-research/tau2-bench](https://github.com/sierra-research/tau2-bench)) — tool-agent-user evaluation; canonical for customer-service-style agents
+  - **GAIA** (general assistant)
+- Save the results. Even a low score is portfolio-worthy because you know how to *run* the harness — that's the rare skill.
 
 ---
 
@@ -198,49 +200,48 @@ agent-eval-and-obs/
 - An `annotations_taxonomy.md` and ≥30 annotated traces
 - A bar chart of failure modes by frequency (in `reports/failure_modes.md`)
 - A regression baseline + comparison script
-- One public benchmark run (SWE-bench-Lite subset, TerminalBench, or GAIA) with a results report
+- **One public benchmark run** (SWE-bench-Verified-Lite subset for the W16 path, or Terminal-Bench 2.0 / TAU2-bench / GAIA) with a results report — this becomes the headline number in W16
+- **Two-judge calibration:** LLM-judge for trajectory quality must use **two judges from different model families** + calibration against ≥10 human-labeled examples. This single discipline separates serious evals from theater.
 - A `final_report.md` that's frank about your agent's weaknesses
 
 ### Stretch
 
-- Add an LLM-judge layer for trajectory quality (using a different model family as the judge)
 - A/B run with two LangGraph variants (e.g., different reflection strategies) and report which wins
-- Export traces to OpenTelemetry → Jaeger so non-LLM-aware teammates can read them
+- Export traces to OpenTelemetry → Jaeger so non-LLM-aware teammates can read them (use [OTel GenAI conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) from Week 12)
 
 ---
 
 ## Curated resources
 
-**Concepts**
+**Concepts (canonical)**
 - [Anthropic — *Demystifying evals for AI agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-- [Galileo — *Agent Evaluation Framework*](https://galileo.ai/blog/agent-evaluation-framework-metrics-rubrics-benchmarks)
-- [Confident AI — *Definitive AI Agent Evaluation Guide*](https://www.confident-ai.com/blog/definitive-ai-agent-evaluation-guide)
-- [Turing College — *Evaluating AI Agents: A Practical Guide*](https://www.turingcollege.com/blog/evaluating-ai-agents-practical-guide)
+- [Hamel Husain — *Your AI Product Needs Evals*](https://hamel.dev/blog/posts/evals/) — required
+- [Hamel Husain — *A Field Guide to Rapidly Improving AI Products*](https://hamel.dev/blog/posts/field-guide/)
+- [Hamel Husain — *LLM-as-a-Judge*](https://hamel.dev/blog/posts/llm-judge/)
+- [Eugene Yan — *LLM Evaluators*](https://eugeneyan.com/writing/llm-evaluators/)
 - [Phil Schmid — *AI Agent Benchmark Compendium*](https://github.com/philschmid/ai-agent-benchmark-compendium) — 50+ benchmarks catalogued
-- [AI21 — *How to scale agentic evaluation: lessons from 200,000 SWE-bench runs*](https://www.ai21.com/blog/scaling-agentic-evaluation-swe-bench/)
+- [AI21 — *How to scale agentic evaluation: 200,000 SWE-bench runs*](https://www.ai21.com/blog/scaling-agentic-evaluation-swe-bench/)
 
-**Observability platforms (pick one and commit)**
-- [Langfuse docs](https://langfuse.com/docs)
+**Observability platforms — pick Langfuse unless you have a real reason not to**
+- [Langfuse docs](https://langfuse.com/docs) — **default recommendation**
 - [Langfuse — *vs Phoenix*](https://www.zenml.io/blog/langfuse-vs-phoenix)
-- [LangSmith docs](https://docs.smith.langchain.com/)
-- [Arize Phoenix](https://docs.arize.com/phoenix)
-- [W&B Weave](https://wandb.ai/site/weave)
-- [DigitalApplied — *Agent Observability 2026*](https://www.digitalapplied.com/blog/agent-observability-platforms-langsmith-langfuse-arize-2026)
-- [Maxim — *Top 5 LLM Observability Platforms for 2026*](https://www.getmaxim.ai/articles/top-5-llm-observability-platforms-for-2026/)
-- [Kanerika — *LangSmith vs Arize vs Langfuse vs W&B*](https://medium.com/@kanerika/llmops-observability-langsmith-vs-arize-vs-langfuse-vs-w-b-f1baeabd1bbf)
-- [Latitude — *Best LLM Observability Tools for Agents (2026)*](https://latitude.so/blog/best-llm-observability-tools-agents-latitude-vs-langfuse-langsmith)
+- [LangSmith docs](https://docs.smith.langchain.com/) — best if you're committed to LangChain's cloud
+- [Arize Phoenix](https://docs.arize.com/phoenix) — best if you're OpenTelemetry-native
+- [W&B Weave](https://wandb.ai/site/weave) — best if you already live in W&B for experiments
 
 **Eval frameworks**
-- [Inspect AI](https://inspect.ai-safety-institute.org.uk/)
+- [Inspect AI](https://inspect.aisi.org.uk/) — modern, sandboxed, agent-aware
 - [DeepEval — *AI Agent Evaluation*](https://deepeval.com/guides/guides-ai-agent-evaluation)
-- [promptfoo](https://www.promptfoo.dev/)
+- [promptfoo](https://www.promptfoo.dev/) — fast eval for prompts, lightweight
 
 **Benchmarks worth knowing**
-- [SWE-bench](https://www.swebench.com/) (and SWE-bench-Lite, SWE-bench-Verified)
-- [TerminalBench](https://www.tbench.ai/)
+- [SWE-bench Verified](https://www.swebench.com/verified.html) — the canonical coding-agent eval
+- [Terminal-Bench 2.0](https://www.tbench.ai/)
+- [TAU2-bench](https://github.com/sierra-research/tau2-bench) — tool-agent-user
+- [Aider Polyglot](https://aider.chat/docs/leaderboards/) — file-editing in 6 languages
 - [GAIA (Meta)](https://huggingface.co/papers/2311.12983)
-- [WebArena](https://webarena.dev/) — web agents
-- [AgentBench](https://github.com/THUDM/AgentBench)
+- [WebArena](https://webarena.dev/) + [BrowseComp](https://openai.com/index/browsecomp/) — web agents
+- [ARC-AGI 2](https://arcprize.org/) — reasoning frontier
 
 ---
 
@@ -267,4 +268,4 @@ agent-eval-and-obs/
 
 ---
 
-← Previous: [Week 14 — LangGraph Orchestration](./WEEK-14.md) · → Next: [Week 16 — Capstone: Design-to-Code Agent](./WEEK-16.md)
+← Previous: [Week 14 — LangGraph Orchestration](./WEEK-14.md) · → Next: [Week 16 — Capstone: Autonomous Coding Agent on SWE-bench-Verified-Lite](./WEEK-16.md)

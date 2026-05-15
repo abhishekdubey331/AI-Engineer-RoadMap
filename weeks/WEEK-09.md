@@ -35,7 +35,9 @@ By Sunday night you should be able to:
 **Read (60 min):**
 - [HF blog — *A Gentle Introduction to 8-bit Matrix Multiplication for LLMs*](https://huggingface.co/blog/hf-bitsandbytes-integration) — the LLM.int8() paper made accessible
 - [Maarten Grootendorst — *A Visual Guide to Quantization*](https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization) — outstanding visuals; absolute must-read
-- [Lightning AI — *Understanding LLM Quantization*](https://lightning.ai/pages/community/tutorial/lora-llm/) (skim relevant section)
+- [Sebastian Raschka — *Finetuning LLMs with LoRA and QLoRA: Insights from Hundreds of Experiments*](https://lightning.ai/pages/community/lora-insights/) — the LoRA/QLoRA quantization-tradeoff reference
+
+> **2026 library landscape:** AutoAWQ was **archived May 2025**; AutoGPTQ has stopped development. The maintained replacements are [`vllm-project/llm-compressor`](https://github.com/vllm-project/llm-compressor) (AWQ, GPTQ, FP8, W8A8) and [`ModelCloud/GPTQModel`](https://github.com/ModelCloud/GPTQModel) (GPTQ specifically, being upstreamed into Transformers/Optimum/PEFT). The classic repos remain useful for understanding *the algorithms* historically, but ship with `llm-compressor`.
 
 **Concepts to lock in:**
 
@@ -44,7 +46,7 @@ By Sunday night you should be able to:
 | FP32 | 32 | huge | Default in research / weights; almost never in serving |
 | FP16 | 16 | ±65k | Original mixed-precision training |
 | BF16 | 16 | huge (FP32-like) | Now standard; bigger range than FP16, fewer NaNs |
-| FP8 | 8 | small | H100+; coming standard for serving |
+| FP8 | 8 | small | H100/B200; **the 2026 default for serving** when you have the hardware |
 | INT8 | 8 | 0–255 | LLM.int8(), good baseline |
 | INT4 | 4 | 16 levels | GPTQ / AWQ / NF4 / GGUF; the sweet spot for consumer serving |
 
@@ -53,9 +55,9 @@ By Sunday night you should be able to:
 ### Day 2 — GPTQ, AWQ, GGUF compared
 
 **Read (90 min):**
-- [Local AI Master — *GGUF vs GPTQ vs AWQ Compared: Best Quantization 2026*](https://localaimaster.com/blog/quantization-explained)
-- [TensorRigs — *LLM Quantization Explained: GGUF vs GPTQ vs AWQ*](https://tensorrigs.com/blog/llm-quantization-guide/)
+- [HF blog — *Overview of natively supported quantization schemes*](https://huggingface.co/blog/overview-quantization-transformers) — the vendor-neutral comparison table
 - [Maarten Grootendorst — *A Visual Guide to Quantization*](https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization) — re-read with the algorithm chapter in mind
+- [Kurt — *Which Quantization Should I Use? A Unified Evaluation on Llama-3.1-8B-Instruct*](https://arxiv.org/abs/2601.14277) — the only empirical apples-to-apples evaluation worth citing
 
 **The three-line summary**
 
@@ -75,7 +77,7 @@ By Sunday night you should be able to:
 ### Day 3 — Quantize a model with all three (Part 1: GGUF)
 
 **Read (30 min):**
-- [llama.cpp — *Quantization*](https://github.com/ggerganov/llama.cpp/blob/master/examples/quantize/README.md)
+- [llama.cpp — *Quantization*](https://github.com/ggml-org/llama.cpp/blob/master/examples/quantize/README.md)
 - [HF blog — *GGUF and interaction with Transformers*](https://huggingface.co/blog/gguf-transformers)
 - [Ollama — *Model File Format*](https://github.com/ollama/ollama/blob/main/docs/modelfile.md)
 
@@ -92,26 +94,37 @@ By Sunday night you should be able to:
 
 ---
 
-### Day 4 — Quantize with AWQ and GPTQ (Part 2)
+### Day 4 — Quantize with AWQ, GPTQ, and FP8 via `llm-compressor`
 
-**Read (45 min):**
-- [autoawq README](https://github.com/casper-hansen/AutoAWQ)
-- [auto-gptq README](https://github.com/AutoGPTQ/AutoGPTQ)
-- [vLLM — *AutoAWQ*](https://docs.vllm.ai/en/latest/features/quantization/auto_awq.html)
-- [vLLM — *GPTQ*](https://docs.vllm.ai/en/latest/features/quantization/gptq.html)
+**Read (60 min):**
+- [vllm-project/llm-compressor](https://github.com/vllm-project/llm-compressor) — the maintained 2026 path
+- [llm-compressor — *AWQ example*](https://docs.vllm.ai/projects/llm-compressor/en/latest/examples/quantization_w4a16/)
+- [llm-compressor — *FP8 dynamic example*](https://docs.vllm.ai/projects/llm-compressor/en/latest/examples/quantization_w8a8_fp8/)
+- [ModelCloud/GPTQModel](https://github.com/ModelCloud/GPTQModel) — maintained GPTQ fork, used by HF Transformers
+- [vLLM — *AutoAWQ docs*](https://docs.vllm.ai/en/latest/features/quantization/auto_awq.html) (still useful as a how-to-load reference)
 
 **Hands-on (~90 min):**
 ```python
-# AWQ
-from awq import AutoAWQForCausalLM
-from transformers import AutoTokenizer
-model = AutoAWQForCausalLM.from_pretrained("your-base-or-merged-model")
-tokenizer = AutoTokenizer.from_pretrained(...)
-model.quantize(tokenizer, quant_config={"zero_point": True, "q_group_size": 128, "w_bit": 4})
-model.save_quantized("./awq-4bit/")
+# AWQ via llm-compressor (the maintained path)
+from llmcompressor import oneshot
+from llmcompressor.modifiers.awq import AWQModifier
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+model_id = "Qwen/Qwen3-Coder-1.5B-Instruct"
+model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", torch_dtype="auto")
+tok = AutoTokenizer.from_pretrained(model_id)
+
+oneshot(
+    model=model, tokenizer=tok,
+    dataset="open_platypus",  # tiny calibration set
+    recipe=AWQModifier(bits=4, group_size=128),
+    output_dir="./awq-4bit/",
+)
 ```
-- Load with `transformers` and sample
-- (Bonus: load with vLLM if you have time — we'll do this properly in Week 10)
+- Load the resulting checkpoint with vLLM (`--quantization awq`) and sample
+- For an FP8 run (if you have H100/L4/4090-class hardware), swap `AWQModifier` for the dynamic FP8 recipe in the examples linked above
+
+> **Pre-quantized model hubs:** for production, you'll often pull pre-quantized checkpoints from [Red Hat AI's HF org](https://huggingface.co/RedHatAI) (FP8/AWQ/GPTQ) or community GGUFs. Browse before you re-quantize from scratch.
 
 ---
 
@@ -162,16 +175,18 @@ Take *your* model from Weeks 7–8 and run a full quantization sweep. Produce on
 ### Spec
 
 ```
-$ python benchmark.py --model qwen-coder-1.5b-design-to-code --eval test.jsonl
+$ python benchmark.py --model qwen3-coder-1.5b-mytask --eval test.jsonl
 
-variant                      VRAM    1st-tok  tok/s   pass@1  size-on-disk
-base (bf16)                  3.6 GB  280 ms   28.4    0.62    3.2 GB
-LoRA-merged (bf16)           3.6 GB  280 ms   28.4    0.78    3.2 GB
-QLoRA-merged (nf4)           1.4 GB  290 ms   30.1    0.77    1.1 GB
-GPTQ-4bit                    1.5 GB  220 ms   42.5    0.74    1.0 GB
-AWQ-4bit                     1.5 GB  210 ms   44.2    0.76    1.0 GB
-GGUF Q4_K_M (llama.cpp)      1.2 GB  180 ms   38.7    0.76    1.0 GB
-GGUF Q2_K (llama.cpp)        0.9 GB  170 ms   45.1    0.55    0.7 GB ← quality drop
+variant                       VRAM    1st-tok  tok/s   pass@1  size-on-disk
+base (bf16)                   3.6 GB  280 ms   28.4    0.62    3.2 GB
+LoRA-merged (bf16)            3.6 GB  280 ms   28.4    0.78    3.2 GB
+QLoRA-merged (nf4)            1.4 GB  290 ms   30.1    0.77    1.1 GB
+FP8 (llm-compressor)          1.9 GB  200 ms   46.0    0.78    1.7 GB ← if you have H100/L4/4090
+GPTQ-4bit (GPTQModel)         1.5 GB  220 ms   42.5    0.74    1.0 GB
+AWQ-4bit (llm-compressor)     1.5 GB  210 ms   44.2    0.76    1.0 GB
+GGUF Q4_K_M (llama.cpp)       1.2 GB  180 ms   38.7    0.76    1.0 GB
+GGUF Q2_K (llama.cpp)         0.9 GB  170 ms   45.1    0.55    0.7 GB ← quality drop
++ KV-cache fp8 on AWQ-4bit    1.1 GB  205 ms   47.1    0.76    1.0 GB ← cheap win
 ```
 
 ### Requirements
@@ -183,7 +198,8 @@ GGUF Q2_K (llama.cpp)        0.9 GB  170 ms   45.1    0.55    0.7 GB ← quality
   - **Decoding throughput** (tok/s)
   - **Eval pass-rate** on your Week-7 test set
   - **Size on disk**
-- At least 5 variants must include base, LoRA-merged, and three quantizations
+- At least 6 variants must include base, LoRA-merged, **FP8** (required if you have H100/L4/4090-class hardware), and three INT4 quantizations (AWQ / GPTQ / GGUF)
+- **One KV-cache quantization row** (`--kv-cache-dtype fp8` in vLLM, or equivalent) — this is the cheapest 2026 lever and the project should measure it explicitly
 - A `report.md` with the table + 3 short paragraphs:
   - **Which variant I'd ship to laptop users** (and why)
   - **Which variant I'd ship to a GPU server** (and why)
@@ -191,9 +207,8 @@ GGUF Q2_K (llama.cpp)        0.9 GB  170 ms   45.1    0.55    0.7 GB ← quality
 
 ### Stretch
 
-- Add FP8 if you have H100 access (or use a hosted runtime)
-- Compare KV-cache quantization (`--cache-quant int8` in vLLM) as well
-- Try **SmoothQuant** or **AQLM** for an additional point on the Pareto frontier
+- Try **SmoothQuant**, **AQLM**, **HQQ**, or **AutoRound** for an additional Pareto point
+- Pull a pre-quantized FP8 checkpoint from [Red Hat AI](https://huggingface.co/RedHatAI) and compare to your home-quantized version
 
 ---
 
@@ -204,19 +219,25 @@ GGUF Q2_K (llama.cpp)        0.9 GB  170 ms   45.1    0.55    0.7 GB ← quality
 - [HF blog — *A Gentle Introduction to 8-bit Matrix Multiplication*](https://huggingface.co/blog/hf-bitsandbytes-integration)
 - [HF blog — *4-bit quantization and QLoRA*](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
 
-**Comparisons**
-- [Local AI Master — *GGUF vs GPTQ vs AWQ Compared (2026)*](https://localaimaster.com/blog/quantization-explained)
-- [TensorRigs — *LLM Quantization Explained (2026)*](https://tensorrigs.com/blog/llm-quantization-guide/)
-- [Arxiv (2026) — *Which Quantization Should I Use? A Unified Evaluation of llama.cpp Quantization on Llama-3.1-8B-Instruct*](https://arxiv.org/html/2601.14277v1)
-- [VRLA Tech — *INT4, INT8, FP8, AWQ, and GPTQ (2026)*](https://vrlatech.com/llm-quantization-explained-int4-int8-fp8-awq-and-gptq-in-2026/)
+**Comparisons & evaluation**
+- [HF blog — *Overview of natively supported quantization schemes*](https://huggingface.co/blog/overview-quantization-transformers) — canonical vendor-neutral table
+- [Kurt et al. — *Which Quantization Should I Use? A Unified Evaluation on Llama-3.1-8B-Instruct*](https://arxiv.org/abs/2601.14277) — the honest empirical reference
+- [Baseten — *33% faster LLM inference with FP8 quantization*](https://www.baseten.co/blog/33-faster-llm-inference-with-fp8-quantization/) — why FP8 on H100/B200 is the 2026 default
 
-**Method docs**
-- [autoawq](https://github.com/casper-hansen/AutoAWQ)
-- [auto-gptq](https://github.com/AutoGPTQ/AutoGPTQ)
-- [bitsandbytes](https://huggingface.co/docs/bitsandbytes/main/en/index)
-- [llama.cpp — *Quantize*](https://github.com/ggerganov/llama.cpp/blob/master/examples/quantize/README.md)
+**Method docs (maintained 2026 path)**
+- [vllm-project/llm-compressor](https://github.com/vllm-project/llm-compressor) — AWQ, GPTQ, FP8, W8A8 — the maintained library
+- [llm-compressor — examples](https://docs.vllm.ai/projects/llm-compressor/en/latest/examples/) (AWQ, GPTQ, FP8 dynamic, KV-cache fp8)
+- [ModelCloud/GPTQModel](https://github.com/ModelCloud/GPTQModel) — maintained GPTQ fork
+- [bitsandbytes](https://huggingface.co/docs/bitsandbytes/main/en/index) — for NF4 / QLoRA
+- [llama.cpp — *Quantize*](https://github.com/ggml-org/llama.cpp/blob/master/tools/quantize/README.md)
 - [Qwen — *Using llama.cpp*](https://qwen.readthedocs.io/en/latest/quantization/llama.cpp.html)
 - [HF blog — *GGUF and interaction with Transformers*](https://huggingface.co/blog/gguf-transformers)
+- [Red Hat AI on Hugging Face](https://huggingface.co/RedHatAI) — pre-quantized FP8/AWQ/GPTQ checkpoints for production
+- [vLLM — *FP8 docs*](https://docs.vllm.ai/en/latest/features/quantization/fp8/)
+
+**Historical (now archived — read for algorithm understanding only)**
+- [AutoAWQ](https://github.com/casper-hansen/AutoAWQ) — archived May 2025
+- [AutoGPTQ](https://github.com/AutoGPTQ/AutoGPTQ) — development stopped
 
 **Papers (skim)**
 - [Dettmers et al. — *QLoRA: Efficient Finetuning of Quantized LLMs*](https://arxiv.org/abs/2305.14314)

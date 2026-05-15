@@ -50,17 +50,18 @@ By Sunday night you should be able to:
 ```python
 from transformers import pipeline
 
-pipe = pipeline("text-generation", model="Qwen/Qwen2.5-Coder-0.5B-Instruct")
+pipe = pipeline("text-generation", model="Qwen/Qwen3-Coder-1.5B-Instruct")
 print(pipe("def fibonacci(n: int) -> int:", max_new_tokens=80)[0]["generated_text"])
 ```
 Try 2–3 different small code models from the HF hub. Notice latency, memory, and output quality.
 
-**Models to try (all small, all permissive):**
-- `Qwen/Qwen2.5-Coder-0.5B-Instruct`
-- `Qwen/Qwen2.5-Coder-1.5B-Instruct`
-- `bigcode/starcoder2-3b`
-- `microsoft/Phi-3.5-mini-instruct`
-- `HuggingFaceTB/SmolLM2-360M-Instruct` (tiniest, for laptops without a GPU)
+**Models to try (all small, all permissive, all 2026-current):**
+- `Qwen/Qwen3-Coder-1.5B-Instruct` *(replaces Qwen2.5-Coder)*
+- `Qwen/Qwen3-Coder-7B-Instruct`
+- `microsoft/Phi-4-mini-instruct` *(replaces Phi-3.5; uses GQA, scores 8–12% higher across MMLU/MATH/HumanEval)*
+- `meta-llama/Llama-3.3-3B-Instruct`
+- `google/gemma-3-1b-it`
+- `HuggingFaceTB/SmolLM3-3B-Instruct` *(replaces SmolLM2)* — and the 360M variant for laptops without a GPU
 
 ---
 
@@ -78,7 +79,7 @@ Skip the `pipeline` abstraction today. You need to know what's underneath.
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
-model_id = "Qwen/Qwen2.5-Coder-1.5B-Instruct"
+model_id = "Qwen/Qwen3-Coder-1.5B-Instruct"
 tok = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16, device_map="auto")
 
@@ -125,7 +126,9 @@ Inference is not just "run the model." It's prefill + decode + a giant cache. If
 **Read (75 min) — pick 2 of these 3:**
 - [HuggingFace — *Best Practices for Generation with Cache*](https://huggingface.co/docs/transformers/main/en/kv_cache) — official deep dive
 - [João Gante — *Generate: KV Cache strategies*](https://huggingface.co/blog/kv-cache-quantization) — practical, including quantizing the KV cache
-- [Introl — *KV Cache Optimization*](https://introl.com/blog/kv-cache-optimization-memory-efficiency-production-llms-guide) — the production-engineer view
+- [vLLM — *PagedAttention* (the OG blog post)](https://blog.vllm.ai/2023/06/20/vllm.html) — the production-engineer view. We'll deep-dive vLLM in Week 10; today, just see why naive KV-cache layout is ~80% wasted.
+
+**Prompt caching (provider-side):** the KV cache concept also lives in the API world. Skim [Anthropic — *Prompt caching*](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) and [OpenAI — *Prompt caching*](https://platform.openai.com/docs/guides/prompt-caching). This is the difference between a $0.20 call and a $0.02 call in production.
 
 **Watch (optional, ~30 min):**
 - [Efficient NLP — *Speeding up the GPT KV cache (visual)*](https://www.youtube.com/watch?v=80bIUggRJf4)
@@ -134,6 +137,7 @@ Inference is not just "run the model." It's prefill + decode + a giant cache. If
 - For a 7B model with 32 layers, 32 heads, `d_head=128`, what's the per-token KV cache size in bytes (fp16)?
 - Why is the KV cache so much memory at long context?
 - What's the difference between **prefill** and **decode** time, and why is decode memory-bandwidth-bound while prefill is compute-bound?
+- What does `attn_implementation="flash_attention_2"` change about this picture? (See last week's FlashAttention-3 reading.)
 
 ---
 
@@ -143,7 +147,9 @@ You don't need to fully understand quantization yet (Week 9 is the deep dive). B
 
 **Read (30 min):**
 - [HF — *Quantization*](https://huggingface.co/docs/transformers/main/en/quantization/overview) — the overview
-- [HF blog — *Making LLMs lighter with AutoGPTQ and transformers*](https://huggingface.co/blog/gptq-integration) (skim)
+- [HF blog — *Overview of natively supported quantization schemes*](https://huggingface.co/blog/overview-quantization-transformers) — vendor-neutral comparison; the right "which one do I pick" reference
+
+> **2026 note:** `AutoGPTQ` and `AutoAWQ` are both archived. In Week 9 we use `vllm-project/llm-compressor` (for AWQ/GPTQ/FP8) and `ModelCloud/GPTQModel` (the maintained GPTQ fork). For now, `bitsandbytes` 4-bit is fine.
 
 **Hands-on (90 min):**
 ```python
@@ -199,13 +205,13 @@ def fibonacci(n: int) -> int:
 
 [12.4 tok/s, 4.2s, peak 1.1 GB VRAM]
 
-$ code-completer bench --prompts ./benchmarks/prompts.jsonl --models qwen-0.5b,qwen-1.5b,phi-3.5
-model       prompts  avg-tok/s  avg-first-token-ms  vram-peak  pass@1*
-qwen-0.5b   20       38.2       180                 1.1 GB     0.40
-qwen-1.5b   20       21.5       320                 3.2 GB     0.55
-phi-3.5     20       18.9       410                 4.4 GB     0.65
+$ code-completer bench --prompts ./benchmarks/prompts.jsonl --models qwen3-1.5b,qwen3-7b,phi-4-mini
+model         prompts  avg-tok/s  avg-first-token-ms  vram-peak  pass@1*
+qwen3-1.5b    20       38.2       180                 1.1 GB     0.50
+qwen3-7b      20       21.5       320                 7.0 GB     0.68
+phi-4-mini    20       18.9       410                 4.4 GB     0.72
 
-* pass@1 here is exact-line match against expected completion (cheap proxy; we'll replace this in Week 11)
+* pass@1 here uses a 20-task HumanEval subset with sandboxed execution (we'll harden this in Week 11). Skip "exact-line match" — it incentivises the wrong behaviour.
 ```
 
 ### Requirements
@@ -214,17 +220,19 @@ phi-3.5     20       18.9       410                 4.4 GB     0.65
 - Streaming output via `TextIteratorStreamer`
 - `apply_chat_template` when the model is instruct-tuned
 - Support at least 3 models from this list:
-  - `Qwen/Qwen2.5-Coder-0.5B-Instruct`
-  - `Qwen/Qwen2.5-Coder-1.5B-Instruct`
-  - `bigcode/starcoder2-3b`
-  - `microsoft/Phi-3.5-mini-instruct`
-  - `HuggingFaceTB/SmolLM2-1.7B-Instruct`
+  - `Qwen/Qwen3-Coder-1.5B-Instruct`
+  - `Qwen/Qwen3-Coder-7B-Instruct`
+  - `microsoft/Phi-4-mini-instruct`
+  - `meta-llama/Llama-3.3-3B-Instruct`
+  - `google/gemma-3-1b-it`
+  - `HuggingFaceTB/SmolLM3-3B-Instruct`
 - `--load-4bit` flag using `BitsAndBytesConfig`
+- `--attn` flag toggling `flash_attention_2` vs `sdpa` so you can benchmark the kernel — single most important inference-perf knob to know
 - Benchmark mode reads JSONL prompts and writes a `bench_report.md` with:
   - Average tokens/sec
   - Average first-token latency
   - Peak VRAM
-  - Exact-line match accuracy on a small homemade test set (~20 prompts)
+  - **pass@1 on a 20-task HumanEval subset** (sandboxed execution; we'll formalise the harness in Week 11)
 - 5+ `pytest` tests
 - A clean `README.md` with: install steps, 3 example invocations, and a 1-paragraph note on which model gave the best quality/speed tradeoff *for you*
 
@@ -249,14 +257,17 @@ phi-3.5     20       18.9       410                 4.4 GB     0.65
 **Long-form articles**
 - [HF blog — *How to generate text*](https://huggingface.co/blog/how-to-generate) — sampling strategies explained
 - [HF blog — *KV cache quantization*](https://huggingface.co/blog/kv-cache-quantization)
-- [Introl — *KV Cache Optimization for Production*](https://introl.com/blog/kv-cache-optimization-memory-efficiency-production-llms-guide)
+- [vLLM blog — *PagedAttention*](https://blog.vllm.ai/2023/06/20/vllm.html) — the production answer to "the KV cache is too big"
 - [Sebastian Raschka — *Understanding and Coding the Self-Attention Mechanism*](https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention) (great refresher)
+- [Tri Dao — *FlashAttention-3*](https://tridao.me/blog/2024/flash3/) — what `attn_implementation="flash_attention_2"` actually buys you
+- [Anthropic — *Prompt caching*](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) and [OpenAI — *Prompt caching*](https://platform.openai.com/docs/guides/prompt-caching) — KV-cache in API form
 
-**Models for the week**
-- [Qwen2.5-Coder series](https://huggingface.co/collections/Qwen/qwen25-coder-66eaa22e6f99801bf65b0c2f)
-- [Phi-3.5 mini instruct](https://huggingface.co/microsoft/Phi-3.5-mini-instruct)
-- [SmolLM2 collection](https://huggingface.co/collections/HuggingFaceTB/smollm2-6723884218bcda64b34d7db9) — laptop-friendly
-- [StarCoder2](https://huggingface.co/bigcode/starcoder2-3b)
+**Models for the week (all 2026-current)**
+- [Qwen3-Coder collection](https://huggingface.co/collections/Qwen/qwen3-coder)
+- [Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct)
+- [Llama-3.3 collection](https://huggingface.co/meta-llama)
+- [Gemma 3 collection](https://huggingface.co/collections/google/gemma-3)
+- [SmolLM3 collection](https://huggingface.co/HuggingFaceTB) — laptop-friendly
 
 ---
 
