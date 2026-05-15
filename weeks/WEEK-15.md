@@ -124,8 +124,7 @@ Traces alone are noise. Tags + annotations turn them into intelligence.
 **Read (60 min):**
 - [Langfuse — *Cost tracking*](https://langfuse.com/docs/integrations/llm-cost)
 - [Langfuse — *Datasets & experiments*](https://langfuse.com/docs/datasets/overview) — used for regression suites
-- [DigitalApplied — *Agent Observability: LangSmith, Langfuse, Arize (2026)*](https://www.digitalapplied.com/blog/agent-observability-platforms-langsmith-langfuse-arize-2026)
-- [Maxim — *Top 5 LLM Observability Platforms for 2026*](https://www.getmaxim.ai/articles/top-5-llm-observability-platforms-for-2026/)
+- [OpenTelemetry — *GenAI semantic conventions*](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — the emerging cost / latency telemetry standard
 
 **Hands-on:**
 - Make your eval suite double as a **regression suite** in Langfuse
