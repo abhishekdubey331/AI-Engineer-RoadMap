@@ -61,7 +61,7 @@ Unsloth is a single import that makes TRL training 2× faster with much less mem
   ```bash
   pip install -U unsloth trl peft bitsandbytes accelerate datasets
   ```
-- Run an Unsloth example notebook end-to-end — for example [their Llama-3 SFT notebook](https://colab.research.google.com/github/unslothai/unsloth/blob/main/nb/Llama3.1_(8B)-Alpaca.ipynb)
+- Run a current Unsloth notebook end-to-end. Don't grab an old hardcoded link — pick from the **live index** at [docs.unsloth.ai/get-started/unsloth-notebooks](https://docs.unsloth.ai/get-started/unsloth-notebooks). For 2026, pick a Qwen3 or Llama-3.3 SFT notebook on a T4.
 - Watch the loss come down. Generate a sample. Done.
 
 ---
@@ -70,10 +70,14 @@ Unsloth is a single import that makes TRL training 2× faster with much less mem
 
 Today: take your Week 7 dataset and SFT a small model on it.
 
-**Recommended setup (Colab T4 / 16GB VRAM)**:
-- Base model: `Qwen/Qwen2.5-Coder-1.5B-Instruct` (or 0.5B if you want to iterate faster)
+**Recommended setup (Colab T4 / 16GB VRAM, May 2026)**:
+- Base model — pick one (all current as of May 2026; check each model card for the exact `target_modules` list):
+  - `Qwen/Qwen3-1.7B-Base` or `Qwen/Qwen3-Coder-1.5B-Instruct` (best for code tasks)
+  - `meta-llama/Llama-3.3-3B-Instruct`
+  - `microsoft/Phi-4-mini-instruct`
+  - `google/gemma-3-1b-it`
 - Format: chat template (you converted to this in Week 7)
-- LoRA config: `r=16`, `alpha=32`, `dropout=0.05`, `target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"]`
+- LoRA config: `r=16`, `alpha=32`, `dropout=0.05`, `target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"]` *(default for Llama-3/Qwen3-style architectures; if you pick Phi-4-mini or Gemma-3, check the model card — module names differ)*
 - Training: 1–3 epochs, LR `2e-4`, batch size 2 + grad accumulation 4 (effective batch 8)
 - `bf16=True`, gradient checkpointing on
 
@@ -103,9 +107,12 @@ This is the day most beginners skip and where the actual learning lives.
    - "Confidently wrong" → likely data quality issue
    - "Garbage" → catastrophic forgetting or bad LR
 
-**Read (30 min) on debugging:**
+**Read (45 min) on debugging:**
 - [Sebastian Raschka — *Practical Tips for Finetuning LLMs Using LoRA* — section on rank/alpha](https://magazine.sebastianraschka.com/p/practical-tips-for-finetuning-llms)
-- [Anyscale — *Fine-tuning LLMs: LoRA or Full-Parameter*](https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2)
+- [Hamel Husain — *LLM Evals FAQ*](https://hamel.dev/blog/posts/evals-faq/) — the practitioner reference for whether your fine-tune actually worked
+- [Hamel Husain — *LLM-as-a-Judge*](https://hamel.dev/blog/posts/llm-judge/) — for the parts of your task where no clean metric exists
+
+> **Catastrophic-forgetting sanity check:** before you call `lora_v1` "better", give it 10 *off-task* prompts (e.g., "write a haiku", "summarize this paragraph"). If it produces gibberish or drops into the fine-tuning shape no matter what, your LR is too high or you trained too many epochs. Always include this check.
 
 ---
 
@@ -119,13 +126,15 @@ Now that you've seen v1 fail in specific ways, you change *one thing at a time* 
 - **Lower learning rate** (2e-4 → 5e-5) — if loss is noisy or training diverges
 - **More target modules** — apply LoRA to MLP layers too (`gate_proj`, `up_proj`, `down_proj`)
 - **Better data** — add 100 hand-written examples covering the failure cases you saw on Day 4
-- **NEFTune** — adds Gaussian noise to embeddings during training; sometimes a big lift, sometimes nothing
+- **Preference tuning on top.** Once SFT is decent, run **ORPO** or **DPO** with 100–500 `(preferred, dispreferred)` pairs you handcraft from v1's failures. This is the highest-leverage modern upgrade. See the [Unsloth RL guide](https://docs.unsloth.ai/basics/reinforcement-learning-rl-guide/preference-dpo-orpo-and-kto).
+- **NEFTune** — adds Gaussian noise to embeddings during training. The original 2023 result has *mixed* replication on Llama-3/Qwen3 bases — try it, measure it, don't trust it on faith.
 
 Retrain. Re-evaluate. Tabulate `lora_v2` next to `lora_v1` and `base`.
 
-**Read (30 min):**
-- [HF blog — *NEFTune: Noisy Embeddings Improve Instruction Finetuning*](https://huggingface.co/papers/2310.05914)
-- [Unsloth — *Long context fine-tuning*](https://docs.unsloth.ai/get-started/all-our-models)
+**Read (45 min):**
+- [Unsloth — *RL / DPO / ORPO / KTO guide*](https://docs.unsloth.ai/basics/reinforcement-learning-rl-guide/preference-dpo-orpo-and-kto) — the canonical 2026 reference for preference tuning on top of SFT
+- [OpenAI cookbook — *DPO guide*](https://cookbook.openai.com/examples/fine_tuning_direct_preference_optimization_guide)
+- [HF blog — *NEFTune: Noisy Embeddings Improve Instruction Finetuning*](https://huggingface.co/papers/2310.05914) — read skeptically
 
 ---
 
@@ -136,7 +145,7 @@ Retrain. Re-evaluate. Tabulate `lora_v2` next to `lora_v1` and `base`.
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-Coder-1.5B-Instruct")
+base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Coder-1.5B-Instruct")
 model = PeftModel.from_pretrained(base, "./outputs/lora-v2/")
 merged = model.merge_and_unload()
 merged.save_pretrained("./merged/")
@@ -145,7 +154,7 @@ merged.save_pretrained("./merged/")
 **Push to the Hub:**
 ```bash
 huggingface-cli login
-huggingface-cli upload your-username/qwen-coder-1.5b-design-to-code ./merged/
+huggingface-cli upload your-username/qwen3-coder-1.5b-mytask ./merged/
 ```
 
 **Write a model card** (`README.md` in the model repo):
@@ -201,10 +210,11 @@ lora-codetune/
 - One reproducible `train.py` script driven by a YAML config
 - At least two configs (`v1`, `v2`) where `v2` is a justified iteration on `v1`
 - Eval script that runs base, v1, v2 on the same `test.jsonl` and produces a markdown table
+- **Catastrophic-forgetting trace:** for each run, generate outputs on 10 *off-task* prompts; log them in the report so anyone can see the model didn't get worse at general capability
 - Loss curves saved to PNG
 - Final report includes:
   - Hyperparameters for each run
-  - Aggregate metrics
+  - Aggregate metrics + **inference latency and peak VRAM** at serve-time (a hiring manager actually cares about these)
   - 5 side-by-side example outputs (base / v1 / v2)
   - At least 3 failure cases with analysis
 - Adapter pushed to the HF Hub with a model card
@@ -212,8 +222,9 @@ lora-codetune/
 ### Stretch
 
 - Add a third run: **QLoRA** (4-bit base) — compare quality, VRAM, training time
-- Train a second model (e.g., `Phi-3.5-mini`) on the same dataset and report which base learns the task best
-- Try one alignment step on top: DPO with `(preferred, dispreferred)` pairs you handcraft from v2 failures
+- Train a second model (e.g., `Phi-4-mini` or `Gemma-3-1b`) on the same dataset and report which base learns the task best
+- **Run one preference-tuning step (ORPO or DPO)** on top of v2 with `(preferred, dispreferred)` pairs you handcraft from v2 failures — this is the 2026 progression that separates a serious project from a tutorial-grade one
+- (Advanced) Try **GRPO** for a verifiable reward (e.g., test pass/fail on a code task) — DeepSeek-R1-style
 
 ---
 
@@ -222,27 +233,29 @@ lora-codetune/
 **Official docs**
 - [TRL — *SFTTrainer*](https://huggingface.co/docs/trl/sft_trainer)
 - [TRL — *Reducing Memory Usage*](https://huggingface.co/docs/trl/main/en/reducing_memory_usage)
-- [TRL — *PEFT integration examples*](https://huggingface.co/docs/trl/v0.15.2/en/peft_integration)
+- [TRL — *PEFT integration examples*](https://huggingface.co/docs/trl/main/en/peft_integration)
 - [PEFT — *Quicktour*](https://huggingface.co/docs/peft/quicktour)
 - [PEFT — *LoRA conceptual guide*](https://huggingface.co/docs/peft/conceptual_guides/lora)
 - [Unsloth docs](https://docs.unsloth.ai/)
-- [Unsloth notebooks (start here)](https://github.com/unslothai/unsloth/blob/main/README.md#%EF%B8%8F-fine-tune-for-free)
+- [Unsloth — *Notebooks index (live, maintained)*](https://docs.unsloth.ai/get-started/unsloth-notebooks)
+- [Unsloth — *RL / DPO / ORPO / KTO / GRPO guide*](https://docs.unsloth.ai/basics/reinforcement-learning-rl-guide/preference-dpo-orpo-and-kto)
 
 **Tutorials**
 - [HF blog — *Make LLM Fine-tuning 2× faster with Unsloth and TRL*](https://huggingface.co/blog/unsloth-trl)
-- [Stephen Diehl — *A Rapid Tutorial on Unsloth*](https://www.stephendiehl.com/posts/unsloth/)
+- [Stephen Diehl — *A Rapid Tutorial on Unsloth*](https://www.stephendiehl.com/posts/unsloth/) (2024 — fundamentals still apply)
+- [Stephen Diehl — *Fine-tuning with ORPO and Unsloth*](https://www.stephendiehl.com/posts/orpo/)
 - [Sebastian Raschka — *Practical Tips for Finetuning LLMs Using LoRA*](https://magazine.sebastianraschka.com/p/practical-tips-for-finetuning-llms) — *the* tuning-numbers reference
 - [Sebastian Raschka — *Parameter-Efficient LLM Finetuning With LoRA*](https://sebastianraschka.com/blog/2023/llm-finetuning-lora.html)
-- [Anyscale — *Fine-tuning LLMs: LoRA or Full-Parameter — an in-depth analysis*](https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2)
-- [Mercity — *In-depth guide to fine-tuning LLMs with LoRA and QLoRA*](https://www.mercity.ai/blog-post/guide-to-fine-tuning-llms-with-lora-and-qlora/)
+- [Hamel Husain — *LLM Evals FAQ*](https://hamel.dev/blog/posts/evals-faq/) — required reading before claiming "v2 is better"
+- [OpenAI cookbook — *DPO guide*](https://cookbook.openai.com/examples/fine_tuning_direct_preference_optimization_guide)
 
 **Papers (skim)**
 - [Hu et al. — *LoRA: Low-Rank Adaptation of Large Language Models*](https://arxiv.org/abs/2106.09685)
 - [Jiang et al. — *NEFTune: Noisy Embeddings Improve Instruction Finetuning*](https://arxiv.org/abs/2310.05914)
 
 **Free Colab notebooks (don't sleep on these)**
-- [Unsloth Llama-3 SFT notebook](https://colab.research.google.com/github/unslothai/unsloth/blob/main/nb/Llama3.1_(8B)-Alpaca.ipynb)
-- [Unsloth — full list of fine-tune notebooks](https://docs.unsloth.ai/get-started/unsloth-notebooks)
+- [Unsloth — live notebooks index](https://docs.unsloth.ai/get-started/unsloth-notebooks) — covers Qwen3, Llama-3.3, Gemma-3, Phi-4, and GRPO recipes; pick the one matching your base
+- [Hugging Face Open-Source AI Cookbook](https://huggingface.co/learn/cookbook/index) — alternative recipes if you prefer plain TRL
 
 ---
 

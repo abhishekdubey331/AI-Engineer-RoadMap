@@ -57,10 +57,11 @@ Problem: model isn't good enough on my task
 
 **Read (75 min):**
 - [Sebastian Raschka — *When to fine-tune (and when to use prompting/RAG/agents)*](https://magazine.sebastianraschka.com/p/llm-research-insights-instruction) — read parts of the long-form review covering fine-tuning vs prompting
-- [Anyscale — *Fine-tuning vs RAG, when to use what*](https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2)
+- [Hamel Husain — *Fine-tuning notes index*](https://hamel.dev/notes/llm/finetuning/) — the most-cited modern practitioner reference; read the high-level overview today and bookmark the specific notes for Days 4–5
+- [BigDataBoutique — *Fine-Tuning LLMs in 2026: When RAG Isn't Enough*](https://bigdataboutique.com/blog/fine-tuning-llms-when-rag-isnt-enough) — current-base-model practitioner perspective (replaces the 2023 Anyscale-Llama-2 piece, whose hyperparameter advice is now misleading)
 - [OpenAI — *Fine-tuning best practices*](https://platform.openai.com/docs/guides/fine-tuning/preparing-your-dataset) — even if you're not using OpenAI, their dataset advice is universal
 
-**Reflect:** For *your* portfolio capstone idea (Week 16: Design-to-Code Agent), is there a piece that fine-tuning genuinely helps? Or could you get there with prompting + RAG? Write 1 paragraph answering this. Be honest.
+**Reflect:** For your Week 16 capstone (an autonomous coding agent benchmarked on SWE-bench-Verified-Lite), is there a piece that fine-tuning genuinely helps? Could you get there with prompting + RAG? Or could a small fine-tuned model for one narrow sub-step (e.g., patch generation or critique) materially improve cost/latency? Write 1 paragraph answering this. Be honest.
 
 ---
 
@@ -78,16 +79,24 @@ Problem: model isn't good enough on my task
 - **Instruction tuning** — SFT, but where the input is an instruction. Pretty much synonymous in practice.
 - **LoRA** — instead of updating all weights, learn low-rank update matrices A and B such that `ΔW ≈ BA`. ~0.1–1% trainable params, much faster, smaller adapters.
 - **QLoRA** — LoRA on top of a base model quantized to 4-bit. Saves another ~60% VRAM. Slightly slower.
-- **DPO / KTO / ORPO** — preference fine-tuning. You give `(prompt, preferred, dispreferred)` instead of `(input, output)`. Used to align style or values.
+- **DPO / KTO / ORPO** — preference fine-tuning. You give `(prompt, preferred, dispreferred)` instead of `(input, output)`. In 2026:
+  - **ORPO** = SFT + preference in one stage. Simplest; works well on small data; the modern default for "just align the output style after SFT."
+  - **DPO** = two-stage (SFT, then preference). More flexible, slightly more compute, well-supported across frameworks.
+  - **KTO** = binary thumbs-up/down per example instead of pairs. Use when you have implicit user feedback but no pairwise comparisons.
+  - **GRPO** (DeepSeek-R1 style) = reward-model-free RL on verifiable rewards (e.g., test pass/fail). Eats coding tasks; expensive but powerful.
+
+  Required references when you do this in Week 8: [Unsloth — *RL / DPO / ORPO / KTO guide*](https://docs.unsloth.ai/basics/reinforcement-learning-rl-guide/preference-dpo-orpo-and-kto) · [OpenAI cookbook — *DPO guide*](https://cookbook.openai.com/examples/fine_tuning_direct_preference_optimization_guide)
 
 ---
 
 ### Day 3 — How to source data
 
-**Read (60 min):**
-- [Stanford Alpaca — *A Strong, Replicable Instruction-Following Model*](https://crfm.stanford.edu/2023/03/13/alpaca.html) — read fully; this is *the* canonical small-instruction dataset story (52k examples generated from 175 seed instructions)
-- [Self-Instruct paper (light skim)](https://arxiv.org/abs/2212.10560) — abstract + Figure 1 + section 3
-- [Sebastian Raschka — *Instruction Pretraining Improvements*](https://magazine.sebastianraschka.com/p/instruction-pretraining-llms) (skim — for context on dataset evolution)
+**Read (75 min):**
+- [Stanford Alpaca — *A Strong, Replicable Instruction-Following Model*](https://crfm.stanford.edu/2023/03/13/alpaca.html) — **historical foundation** (March 2023). The recipe still teaches the right pattern, but its 52k-from-davinci-003 quality bar is below 2026 standards. Read for the *method*, not as a quality target.
+- [Self-Instruct paper (light skim)](https://arxiv.org/abs/2212.10560) — abstract + Figure 1 + section 3 — also a historical foundation
+- [Magpie paper (Xu et al., 2024)](https://arxiv.org/abs/2406.08464) — current state-of-the-art for synthetic instruction-data generation; the recipe that replaced Self-Instruct
+- [Hamel Husain — *Curating LLM training data*](https://hamel.dev/notes/llm/finetuning/data_cleaning.html) — the modern practitioner playbook
+- [HuggingFace blog — *SmolLM3*](https://huggingface.co/blog/smollm3) — peek behind a worked example of dataset curation at scale (FineWeb-Edu, data mix decisions)
 
 **Strategies (pick what fits your project):**
 
@@ -128,13 +137,15 @@ Yes, by hand. This is the most valuable thing you'll do all month. You'll surfac
 - Prompt GPT-4 / Claude to generate 50 more in the same format
 - Mix and shuffle
 
-**Clean (60 min):**
+**Clean (75 min):**
 - [HuggingFace — *Filter*, *Map*, *Deduplicate* with `datasets`](https://huggingface.co/docs/datasets/process)
 - Deduplicate exact matches
 - Near-dedup with `datasketch` MinHash + LSH (or `text-dedup` library)
 - PII / secret scrub with `detect-secrets` or simple regex (emails, API keys, names)
 - Length filter: drop the longest/shortest 1% (likely junk)
 - Format check: every row has the expected keys and types
+- **Contamination check** — for any test row, search the base model's pretraining-proxy data (or use [LLM Decontaminator](https://github.com/lm-sys/llm-decontaminator) / [Min-K%++](https://github.com/zjysteven/mink-plus-plus)) to confirm it didn't leak in. A 2026 dataset without a contamination report is incomplete.
+- **Diversity audit** — embed every prompt, cluster (`hdbscan` or k-means), confirm no single cluster has >5–10% of the data. Synthetic generation tends to collapse into a few templates; this catches it.
 
 **Read (60 min):**
 - [HuggingFace — *Data preparation* in the LLM Course](https://huggingface.co/learn/llm-course/chapter11/3) — current best practices
@@ -216,12 +227,15 @@ instruct-dataset-v1/
 - Each example follows a strict schema (`pydantic` or `jsonschema` validated)
 - A `DATASET_CARD.md` following [HF dataset card structure](https://huggingface.co/docs/hub/datasets-cards)
 - Baseline metric on the test set with the *unfine-tuned* model
+- **Contamination check** — log how many test rows had near-matches against the base model's pretraining-proxy data (or run an LLM Decontaminator pass)
+- **Diversity audit** — cluster prompt embeddings; confirm no single cluster holds >10% of the data (synthetic generation tends to collapse)
+- **Dataset published to the Hugging Face Hub** as a baseline (was stretch, now required — it's 10 lines and makes the artifact public)
 
 ### Stretch
 
-- Push the dataset to the Hugging Face Hub (`datasets-cli`)
-- Add a `--diversity` audit: cluster prompts via embeddings and ensure no cluster has >5% of the data
-- Write a `pytest` suite that validates the schema + dedup invariants of any dataset version (so future commits can't break it)
+- Add an automated **AlpaGasus-style** quality scoring step: prompt a strong LLM to grade each row 1–5; drop the bottom decile
+- Add a [Magpie](https://arxiv.org/abs/2406.08464)-style self-synthesis pipeline: generate new instructions by sampling from an aligned model
+- Write a `pytest` suite that validates the schema + dedup + diversity invariants of any dataset version
 
 ---
 
@@ -229,18 +243,24 @@ instruct-dataset-v1/
 
 **Concept / decision-making**
 - [Sebastian Raschka — *When to fine-tune* (instruction insights)](https://magazine.sebastianraschka.com/p/llm-research-insights-instruction)
-- [Anyscale — *Fine-tuning vs RAG*](https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2)
+- [Hamel Husain — *Fine-tuning notes index*](https://hamel.dev/notes/llm/finetuning/) — the modern practitioner reference
+- [BigDataBoutique — *Fine-Tuning LLMs in 2026: When RAG Isn't Enough*](https://bigdataboutique.com/blog/fine-tuning-llms-when-rag-isnt-enough)
 - [Cameron R. Wolfe — *Easily Train a Specialized LLM*](https://cameronrwolfe.substack.com/p/easily-train-a-specialized-llm-peft)
 - [Sebastian Raschka — *Practical Tips for Finetuning LLMs Using LoRA*](https://magazine.sebastianraschka.com/p/practical-tips-for-finetuning-llms)
 - [Sebastian Raschka — *Parameter-Efficient LLM Finetuning With LoRA*](https://sebastianraschka.com/blog/2023/llm-finetuning-lora.html)
+- [Unsloth — *RL / DPO / ORPO / KTO guide*](https://docs.unsloth.ai/basics/reinforcement-learning-rl-guide/preference-dpo-orpo-and-kto)
+- [OpenAI cookbook — *DPO guide*](https://cookbook.openai.com/examples/fine_tuning_direct_preference_optimization_guide)
 
 **Datasets / data generation**
-- [Stanford Alpaca blog](https://crfm.stanford.edu/2023/03/13/alpaca.html)
-- [tatsu-lab/alpaca on HF Hub](https://huggingface.co/datasets/tatsu-lab/alpaca)
-- [Self-Instruct paper](https://arxiv.org/abs/2212.10560)
-- [Databricks — *Dolly 15k*](https://github.com/databrickslabs/dolly) — fully-human-written instruction dataset
+- [Hamel Husain — *Curating LLM training data*](https://hamel.dev/notes/llm/finetuning/data_cleaning.html) — **the** modern data-curation reference
+- [Magpie paper (2024)](https://arxiv.org/abs/2406.08464) — current state-of-the-art for synthetic instruction generation
+- [Stanford Alpaca blog](https://crfm.stanford.edu/2023/03/13/alpaca.html) — historical foundation
+- [Self-Instruct paper](https://arxiv.org/abs/2212.10560) — historical foundation
+- [allenai/tulu-3-sft-mixture](https://huggingface.co/datasets/allenai/tulu-3-sft-mixture) — modern reference SFT dataset
+- [argilla/distilabel-intel-orca-dpo-pairs](https://huggingface.co/datasets/argilla/distilabel-intel-orca-dpo-pairs) — modern reference DPO dataset
+- [HuggingFaceH4/no_robots](https://huggingface.co/datasets/HuggingFaceH4/no_robots) — 10k high-quality human-written, the gold standard for tiny datasets
+- [HuggingFaceH4/ultrachat_200k](https://huggingface.co/datasets/HuggingFaceH4/ultrachat_200k)
 - [OpenAssistant Conversations](https://huggingface.co/datasets/OpenAssistant/oasst1)
-- [HuggingFaceH4/no_robots](https://huggingface.co/datasets/HuggingFaceH4/no_robots) — 10k high-quality human-written, the new gold standard for small datasets
 
 **Tooling**
 - [Hugging Face `datasets` — Process docs](https://huggingface.co/docs/datasets/process)

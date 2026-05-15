@@ -48,7 +48,8 @@ Chunking is more impactful on retrieval quality than the choice of embedding mod
 **Read (90 min):**
 - [Pinecone — *Chunking strategies*](https://www.pinecone.io/learn/chunking-strategies/) — the classic taxonomy
 - [Greg Kamradt — *5 Levels of Text Splitting*](https://github.com/FullStackRetrieval-com/RetrievalTutorials/blob/main/tutorials/LevelsOfTextSplitting/5_Levels_Of_Text_Splitting.ipynb) — go from character → recursive → semantic chunking, with code
-- [Superlinked VectorHub — *Evaluation of RAG Retrieval Chunking Methods*](https://superlinked.com/vectorhub/articles/evaluation-rag-retrieval-chunking-methods) — empirical comparison
+- [Chroma Research — *Evaluating Chunking Strategies for Retrieval*](https://research.trychroma.com/evaluating-chunking) — the 2024 empirically-grounded study; modern default reference
+- [Hamel Husain — *Mistakes I see people make doing RAG*](https://hamel.dev/notes/llm/rag/) — the most-cited practitioner take; read once now and again after Week 6
 
 **Hands-on (30 min):**
 - Pick a markdown doc you actually care about (e.g., one of your project READMEs, or the FastAPI docs)
@@ -62,28 +63,30 @@ Chunking is more impactful on retrieval quality than the choice of embedding mod
 You don't need to fine-tune an embedding model in Week 5. You need to **pick a good one off the shelf**.
 
 **Read (60 min):**
-- [Hugging Face — *MTEB Leaderboard*](https://huggingface.co/spaces/mteb/leaderboard) — open it. Don't worry about the rows; understand the columns: retrieval, STS, classification, etc.
-- [Modal — *Top embedding models on the MTEB leaderboard*](https://modal.com/blog/mteb-leaderboard-article) — translates the leaderboard into actionable picks
+- [Hugging Face — *MTEB Leaderboard*](https://huggingface.co/spaces/mteb/leaderboard) — open it. Use the **MMTEB / MTEB v2** tab (Borda over 131 tasks, 250+ languages); the single-aggregate-English leaderboard is now obsolete. Focus on **retrieval** as the column most correlated with RAG quality.
+- [Hugging Face — *MMTEB: A Massive Multilingual Text Embedding Benchmark*](https://huggingface.co/blog/mteb) — the official write-up of the v2 methodology
 - [Sentence Transformers — *Pretrained Models*](https://www.sbert.net/docs/sentence_transformer/pretrained_models.html) — the reference doc
 
-**Defaults for the rest of the roadmap (memorize these):**
+**Defaults for the rest of the roadmap (May 2026):**
 
 | Use case | Recommended model |
 |---|---|
-| English, fast, free | `BAAI/bge-small-en-v1.5` (33M params, runs anywhere) |
-| English, best quality, free | `BAAI/bge-large-en-v1.5` or `nomic-ai/nomic-embed-text-v1.5` |
-| Multilingual or long-context | `BAAI/bge-m3` (8k context, dense+sparse+colbert) |
-| You'll pay a tiny per-query cost | `text-embedding-3-small` (OpenAI) or `embed-english-v3` (Cohere) |
-| Code-specific | `jinaai/jina-embeddings-v2-base-code` or `nomic-ai/CodeRankEmbed` |
+| English, fast, free, ~600MB | `Qwen/Qwen3-Embedding-0.6B` (Apache-2.0, current open SoTA at this size) |
+| English, top quality, free | `Qwen/Qwen3-Embedding-4B` or `nvidia/NV-Embed-v2` or `mixedbread-ai/mxbai-embed-large-v1` |
+| Multilingual or long-context | `BAAI/bge-m3` (8k context, dense+sparse+ColBERT multi-vector) |
+| You'll pay a tiny per-query cost | `text-embedding-3-large` (OpenAI), `voyage-3` (Voyage), `embed-multilingual-v3` (Cohere) |
+| Code-specific | `Salesforce/SFR-Embedding-Code-400M_R` or `Qodo/Qodo-Embed-1-1.5B` or `jinaai/jina-embeddings-v3` (Jina v2-code is officially **deprecated**) |
 
 **Hands-on (60 min):**
 ```python
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
 emb = model.encode(["How do I sort a list?", "list.sort() in Python", "Apple stock price"])
 # cosine-similarity between (0,1) should be high; (0,2) should be low
 ```
+
+> Note: many embedding models (BGE, E5, Qwen3-Embedding) want instruction prefixes (`query: ...` / `passage: ...`). Always check the model card.
 
 ---
 
@@ -118,7 +121,7 @@ docs/ (markdown)
 [chunker]
    │
    ▼
-[embed → BGE-small]
+[embed → Qwen3-Embedding-0.6B]
    │
    ▼
 [Qdrant collection]
@@ -126,6 +129,8 @@ docs/ (markdown)
    ▼      query ──► [embed query] ──► [top-k from Qdrant]
 [generator: prompt = system + context + query]  ──►  answer
 ```
+
+> **2026 preview:** late-interaction retrieval (ColBERTv2 via [RAGatouille](https://github.com/AnswerDotAI/RAGatouille) or PyLate) often beats bi-encoder retrieval out-of-the-box. We'll cover it as a first-class technique in Week 6; for now, build the bi-encoder baseline.
 
 **Hands-on (~2 hr):**
 - Ingest: walk a `docs/` folder, chunk each markdown file (recursive splitter, ~500 token chunks with 50 overlap), embed, upsert into Qdrant
@@ -184,13 +189,14 @@ SOURCES:
 
 - Two versions in the same repo: `rag_scratch.py` (no framework) and `rag_llamaindex.py` (or `rag_langchain.py`)
 - Chunking: recursive character splitter, 400–600 tokens, 50–100 overlap
-- Embedding: `BAAI/bge-small-en-v1.5`
+- Embedding: `Qwen/Qwen3-Embedding-0.6B` (or `mixedbread-ai/mxbai-embed-large-v1` if you have a bit more VRAM)
 - Vector DB: Qdrant (Docker) or Chroma (local persistent)
 - Generator: any LLM (OpenAI, Anthropic, or local via Ollama / your Week 3 code-completer)
 - Citations: every answer must list which chunks were retrieved + similarity scores
 - A small eval (~10 questions where you know the right answer + which doc has it). For each, measure:
   - Retrieval@5 — did the correct chunk appear in the top-5?
   - Faithfulness — did the answer use only information present in the retrieved chunks? (do this manually for now, automate in Week 11)
+- **A `failures.jsonl` log:** every question that failed retrieval or faithfulness, with reason. This becomes the test set for Week 6 upgrades.
 - `README.md` with: setup, examples, a section called **"What naive RAG fails at"** listing the 3 worst failure cases you found
 
 ### Stretch
@@ -211,11 +217,13 @@ SOURCES:
 - [LlamaIndex — *Getting Started*](https://docs.llamaindex.ai/en/stable/getting_started/starter_example/)
 
 **Embeddings**
-- [MTEB Leaderboard](https://huggingface.co/spaces/mteb/leaderboard)
-- [Modal — *Top embedding models on MTEB*](https://modal.com/blog/mteb-leaderboard-article)
+- [MTEB Leaderboard (use the MMTEB / v2 tab)](https://huggingface.co/spaces/mteb/leaderboard)
+- [HuggingFace — *MMTEB methodology blog*](https://huggingface.co/blog/mteb)
 - [Sentence Transformers — *Pretrained Models*](https://www.sbert.net/docs/sentence_transformer/pretrained_models.html)
-- [BAAI BGE collection](https://huggingface.co/BAAI)
-- [Nomic — *nomic-embed-text-v1.5*](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5)
+- [Qwen3-Embedding collection](https://huggingface.co/collections/Qwen/qwen3-embedding) — current SoTA open small/mid
+- [Nomic — *nomic-embed-text-v2-moe*](https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe)
+- [mixedbread-ai/mxbai-embed-large-v1](https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1)
+- [BAAI/bge-m3 (dense + sparse + ColBERT multi-vector)](https://huggingface.co/BAAI/bge-m3)
 
 **Vector DBs**
 - [Qdrant docs — *Quickstart*](https://qdrant.tech/documentation/quickstart/)
@@ -223,8 +231,13 @@ SOURCES:
 - [Pinecone — *What is a vector database?*](https://www.pinecone.io/learn/vector-database/)
 - [Weaviate — *Vector search explained*](https://weaviate.io/blog/vector-search-explained)
 
+**Practitioner reading (don't skip)**
+- [Hamel Husain — *Mistakes I see people make doing RAG*](https://hamel.dev/notes/llm/rag/) — the 2024–2026 practitioner reference
+- [Jason Liu — *RAG writing*](https://jxnl.co/writing/category/rag/) — query understanding, evals, segmentation; widely cited
+- [Chroma Research — *Evaluating Chunking Strategies*](https://research.trychroma.com/evaluating-chunking)
+
 **Courses (free, optional)**
-- [DeepLearning.AI — *Building and Evaluating Advanced RAG Applications*](https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/)
+- [DeepLearning.AI — *Advanced Retrieval for AI with Chroma*](https://learn.deeplearning.ai/courses/advanced-retrieval-for-ai-with-chroma)
 - [DeepLearning.AI — *Vector Databases: from Embeddings to Applications*](https://www.deeplearning.ai/short-courses/vector-databases-embeddings-applications/)
 
 ---

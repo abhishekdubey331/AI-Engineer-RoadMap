@@ -40,7 +40,7 @@ By Sunday night you should be able to:
 - [Elastic — *RRF (Reciprocal Rank Fusion)*](https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html) — the simplest, most common fusion algorithm
 
 **Hands-on (60 min):**
-- Add BM25 to your Week 5 pipeline using `rank_bm25` (or Qdrant's built-in sparse vectors via `bge-m3`)
+- Add BM25 to your Week 5 pipeline using [`bm25s`](https://github.com/xhluca/bm25s) — ~500× faster than `rank_bm25` and the modern default. Alternatively, use Qdrant's built-in sparse vectors via `bge-m3`.
 - Implement reciprocal rank fusion:
   ```python
   def rrf(rankings: list[list[str]], k: int = 60) -> list[str]:
@@ -60,13 +60,14 @@ A bi-encoder (your embedding model) is fast but coarse. A **cross-encoder rerank
 
 **Read (60 min):**
 - [Sentence Transformers — *Retrieve & Re-Rank*](https://www.sbert.net/examples/applications/retrieve_rerank/README.html) — the canonical explainer
-- [Cohere — *Rerank introduction*](https://docs.cohere.com/docs/rerank-2)
+- [Cohere — *Rerank overview*](https://docs.cohere.com/docs/rerank-overview)
 - [Pinecone — *Rerankers*](https://www.pinecone.io/learn/series/rag/rerankers/)
 
 **Hands-on (90 min):**
 - Add reranking to your pipeline. Pick one:
   - **Free / local:** `BAAI/bge-reranker-v2-m3` (cross-encoder) — runs on CPU for small batches
-  - **Hosted:** Cohere Rerank-v3.5 (small free tier)
+  - **Free / local, stronger:** `mixedbread-ai/mxbai-rerank-large-v2` or `jinaai/jina-reranker-v2-base-multilingual`
+  - **Hosted:** Cohere Rerank-3.5, Voyage `rerank-2`
 - Pipeline: retrieve top-50 (hybrid) → rerank to top-5 → send to LLM
 - Re-run your eval. Lift?
 
@@ -92,6 +93,27 @@ According to Anthropic: contextual embeddings + contextual BM25 → 49% reductio
 
 ---
 
+### Day 3.5 — Late-interaction & GraphRAG (when to reach for them)
+
+Two retrieval techniques you should know exist by 2026 even if you don't ship them this week.
+
+**Late-interaction / ColBERTv2.** Instead of one dense vector per chunk, store one vector per token; at query time, do max-sim over query and doc tokens. Far more accurate than bi-encoders on hard queries, with manageable cost via PLAID / multi-vector.
+
+- [Answer.AI — *RAGatouille*](https://github.com/AnswerDotAI/RAGatouille) — ColBERT made trivially easy
+- [PyLate](https://github.com/lightonai/pylate) — Sentence-Transformers-style API for late interaction
+- Or use `BAAI/bge-m3`'s built-in ColBERT multi-vector output
+
+**GraphRAG.** For entity-heavy, relational queries ("what does X depend on?", "who reports to whom?") that defeat semantic similarity. Extract entities/relations, build a graph, retrieve subgraphs alongside chunks.
+
+- [Microsoft GraphRAG](https://microsoft.github.io/graphrag/) — the reference implementation
+- [LightRAG](https://github.com/HKUDS/LightRAG) — lighter-weight alternative
+
+**Hands-on (optional, 45 min):** spin up RAGatouille on the same corpus you used in Day 1–2. Compare its retrieval@5 against your hybrid+rerank stack. It often wins out of the box.
+
+> When does naive long-context win? When your corpus fits in the model's window (~1M tokens for Gemini, ~200k for Claude) and you can afford prompt-caching the whole thing. Sometimes the answer is "don't retrieve, just paste."
+
+---
+
 ### Day 4 — Query rewriting & expansion
 
 Half of RAG failures are because the user's query doesn't look anything like the documents. *"How do I make it faster?"* doesn't retrieve documents that say *"optimize for low-latency inference."*
@@ -104,7 +126,7 @@ Techniques:
 **Read (60 min):**
 - [LangChain — *Query construction & translation*](https://python.langchain.com/docs/concepts/retrieval/#query-translation) — overview of the techniques
 - [HyDE paper — *Precise Zero-Shot Dense Retrieval without Relevance Labels*](https://arxiv.org/abs/2212.10496) (skim — the abstract + figure 1 are enough)
-- [Anthropic — *Long-context prompting*](https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/long-context-tips) (skim; useful when context is huge)
+- [Anthropic — *Long-context prompting*](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/long-context-tips) (skim; useful when context is huge)
 
 **Hands-on (60 min):**
 - Implement one technique (HyDE is the easiest and works surprisingly well)
@@ -154,23 +176,23 @@ Take your Week 5 `docs-rag` and turn it into a real-quality system. Make the gai
 A `compose.py`-style entrypoint that lets you toggle pipeline components:
 
 ```
-$ advanced-rag eval --variants naive,hybrid,hybrid+rerank,contextual,contextual+rerank
-variant                  context_precision  context_recall  faithfulness  answer_relevancy
-naive                    0.62               0.51            0.78          0.71
-hybrid                   0.71               0.66            0.82          0.78
-hybrid+rerank            0.82               0.74            0.86          0.82
-contextual               0.78               0.73            0.85          0.81
-contextual+rerank        0.88               0.81            0.91          0.86  ← winner
+$ advanced-rag eval --variants naive,hybrid,hybrid+rerank,contextual+rerank,colbert+rerank
+variant                  context_precision  context_recall  faithfulness  answer_relevancy  ndcg@10
+naive                    0.62               0.51            0.78          0.71              0.58
+hybrid                   0.71               0.66            0.82          0.78              0.67
+hybrid+rerank            0.82               0.74            0.86          0.82              0.79
+contextual+rerank        0.88               0.81            0.91          0.86              0.83
+colbert+rerank           0.86               0.83            0.90          0.85              0.84  ← winner
 ```
 
 ### Requirements
 
-- One codebase, 5 toggleable pipeline variants
-- Hybrid retrieval: dense (BGE) + sparse (BM25 via `rank_bm25` or `bge-m3` sparse), fused with RRF
-- Reranker: `bge-reranker-v2-m3` (free, local) **or** Cohere Rerank
-- Contextual Retrieval implementation (per Anthropic recipe, with prompt caching if you use Claude)
-- One query-rewriting variant (HyDE recommended)
+- One codebase, ≥ 5 toggleable pipeline variants — at minimum: `naive`, `hybrid`, `hybrid+rerank`, `contextual+rerank`, and **one of** `colbert(+rerank)` (via RAGatouille / bge-m3 multi-vector) or a query-rewriting variant (HyDE)
+- Hybrid retrieval: dense + sparse (BM25 via [`bm25s`](https://github.com/xhluca/bm25s) or `bge-m3` sparse), fused with RRF
+- Reranker: `bge-reranker-v2-m3` or `mxbai-rerank-large-v2` (free, local) **or** Cohere Rerank-3.5 / Voyage rerank-2
+- Contextual Retrieval implementation (per Anthropic recipe, with **prompt caching** if you use Claude — required, not optional; the cost math falls apart without it)
 - Ragas evaluation on at least 30 questions, results saved to `eval/results.csv`
+- **At least one non-LLM-judge metric** in the eval (e.g., NDCG@10 against gold-labeled retrieval — don't let Ragas's LLM judge be your only signal)
 - `report.md` with:
   - A bar chart of all variants on all metrics
   - **Where it broke** — 3 examples each variant got wrong
@@ -179,25 +201,32 @@ contextual+rerank        0.88               0.81            0.91          0.86  
 ### Stretch
 
 - Add latency + cost to the eval table (an answer might be 0.05 better but 5× more expensive)
-- Try a domain-specific embedding model (e.g., `jinaai/jina-embeddings-v2-base-code` if your corpus is code)
+- Try a domain-specific embedding (e.g., `Salesforce/SFR-Embedding-Code-400M_R` if your corpus is code)
 - Add a small Streamlit / Gradio UI
 
 ---
 
 ## Curated resources
 
-**Anthropic Contextual Retrieval (your primary primary source)**
+**Anthropic Contextual Retrieval (your primary source)**
 - [Anthropic — *Introducing Contextual Retrieval*](https://www.anthropic.com/news/contextual-retrieval) — read fully
 - [Anthropic cookbook — *Contextual embeddings*](https://github.com/anthropics/anthropic-cookbook/tree/main/skills/contextual-embeddings) — runnable notebook
 - [Together AI — *Implement contextual RAG from Anthropic*](https://docs.together.ai/docs/how-to-implement-contextual-rag-from-anthropic)
-- [Towards Data Science — *Implementing Anthropic's Contextual Retrieval for Powerful RAG*](https://towardsdatascience.com/implementing-anthropics-contextual-retrieval-for-powerful-rag-performance-b85173a65b83/)
+- [DataCamp — *Contextual Retrieval: A Guide With Implementation*](https://www.datacamp.com/tutorial/contextual-retrieval-anthropic)
+
+**Late-interaction & GraphRAG**
+- [AnswerDotAI/RAGatouille](https://github.com/AnswerDotAI/RAGatouille) — ColBERT made trivial
+- [lightonai/PyLate](https://github.com/lightonai/pylate)
+- [Microsoft GraphRAG](https://microsoft.github.io/graphrag/)
+- [LightRAG](https://github.com/HKUDS/LightRAG)
 
 **Hybrid search & reranking**
 - [Pinecone — *Hybrid search*](https://www.pinecone.io/learn/hybrid-search-intro/)
 - [Pinecone — *Rerankers*](https://www.pinecone.io/learn/series/rag/rerankers/)
 - [Weaviate — *Hybrid search explained*](https://weaviate.io/blog/hybrid-search-explained)
 - [Sentence Transformers — *Retrieve & Re-Rank*](https://www.sbert.net/examples/applications/retrieve_rerank/README.html)
-- [Cohere — *Rerank introduction*](https://docs.cohere.com/docs/rerank-2)
+- [Cohere — *Rerank overview*](https://docs.cohere.com/docs/rerank-overview)
+- [xhluca/bm25s](https://github.com/xhluca/bm25s) — fast pure-Python BM25
 - [BAAI BGE Reranker collection](https://huggingface.co/collections/BAAI/bge-reranker-66c2c5dbc6e21d2dfedb1b87)
 
 **Query rewriting / HyDE**
@@ -206,11 +235,12 @@ contextual+rerank        0.88               0.81            0.91          0.86  
 
 **Evaluation**
 - [Ragas docs](https://docs.ragas.io/en/stable/)
-- [Anthropic — *Evaluation* docs](https://docs.claude.com/en/docs/test-and-evaluate/eval-tool)
+- [Anthropic — *Evaluation* docs](https://platform.claude.com/docs/en/test-and-evaluate/eval-tool)
 - [TruLens — *RAG triad*](https://www.trulens.org/getting_started/core_concepts/rag_triad/) — context relevance / groundedness / answer relevance
 
-**Long-form**
-- [DEV — *Advanced Retrieval Patterns That Actually Work*](https://dev.to/young_gao/rag-is-not-dead-advanced-retrieval-patterns-that-actually-work-in-2026-2gbo)
+**Practitioner reading**
+- [Hamel Husain — *Mistakes I see people make doing RAG*](https://hamel.dev/notes/llm/rag/)
+- [Jason Liu — *RAG writing*](https://jxnl.co/writing/category/rag/) — query understanding, evals, segmentation
 - [Analytics Vidhya — *Building Contextual RAG with Hybrid Search and Reranking*](https://www.analyticsvidhya.com/blog/2024/12/contextual-rag-systems-with-hybrid-search-and-reranking/)
 
 ---
