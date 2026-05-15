@@ -165,11 +165,16 @@ $ coding-agent "Refactor src/utils.py to be type-checked end-to-end"
 - Eval against 10 hand-written tasks; report success rate, avg nodes touched, avg cost
 - README compares LangGraph vs your Week-13 hand-rolled agent on the same tasks
 
+### Required
+
+- Render the graph: `app.get_graph().draw_mermaid_png()` and commit the image (`graph.png`) to the repo. This becomes the README hero shot.
+- A 200-word "**when is LangGraph overkill?**" section comparing your graph to a simpler one-shot agent for the same tasks. Optionality awareness signals seniority.
+
 ### Stretch
 
 - Add an evaluator-optimizer loop: a `judge` node grades the patch; if score < threshold, loop back to `plan`
 - Add a [LangGraph Studio](https://langchain-ai.github.io/langgraph/cloud/) launch config and screenshot of the visualizer
-- Add MCP server exposure so your agent can be driven from Claude Desktop / Cursor / VS Code
+- Reimplement the same graph in **Pydantic AI** or **OpenAI Agents SDK** and write a head-to-head comparison
 
 ---
 
@@ -185,23 +190,26 @@ $ coding-agent "Refactor src/utils.py to be type-checked end-to-end"
 - [LangGraph — *Memory*](https://langchain-ai.github.io/langgraph/concepts/memory/)
 - [LangGraph — *Map-Reduce*](https://langchain-ai.github.io/langgraph/how-tos/map-reduce/)
 
-**Tutorials (2026)**
-- [PyCharm Blog — *LangChain Python Tutorial: A Complete Guide for 2026*](https://blog.jetbrains.com/pycharm/2026/02/langchain-tutorial-2026/)
-- [DEV — *LangGraph 2.0: The Definitive Guide to Production-Grade AI Agents (2026)*](https://dev.to/richard_dillon_b9c238186e/langgraph-20-the-definitive-guide-to-building-production-grade-ai-agents-in-2026-4j2b)
-- [DEV — *Building Production AI Agents with LangGraph: Beyond the Toy Examples (2026)*](https://dev.to/young_gao/building-production-ai-agents-with-langgraph-beyond-the-toy-examples-2idm)
-- [tech-insider.org — *Build an AI Agent with LangGraph Python in 14 Steps (2026)*](https://tech-insider.org/langgraph-tutorial-ai-agent-python-2026/)
-- [Alphabold — *LangGraph Agents in Production: Architecture, Costs & Real-World Outcomes*](https://www.alphabold.com/langgraph-agents-in-production/)
-
 **Pattern essays**
-- [LangChain blog — *Plan-and-Execute agents*](https://blog.langchain.dev/planning-agents/)
+- [LangChain blog — *Plan-and-Execute agents*](https://blog.langchain.dev/planning-agents/) — the pattern essay (2023, but the pattern is unchanged)
 - [Anthropic — *Building Effective Agents* (revisit)](https://www.anthropic.com/research/building-effective-agents)
+- [Anthropic — *How we built our multi-agent research system*](https://www.anthropic.com/engineering/multi-agent-research-system) — the case for subgraphs / multi-agent
+- [Cognition — *Don't Build Multi-Agents*](https://cognition.ai/blog/dont-build-multi-agents) + [*What's Actually Working*](https://cognition.ai/blog/multi-agents-working) — the live debate (revisit from Week 13)
 
-**Other frameworks (know they exist)**
+**Framework comparisons & alternatives**
+- [Speakeasy — *AI agent framework comparison*](https://www.speakeasy.com/blog/ai-agent-framework-comparison) — the best 2026 side-by-side of LangGraph / CrewAI / Pydantic AI / Mastra / Vercel AI SDK
+- [Phil Schmid — *Single vs Multi-Agents*](https://www.philschmid.de/single-vs-multi-agents) — opinionated synthesis
+- [Pydantic AI](https://ai.pydantic.dev/) — where the type-safety-first agent crowd is going in 2026
+- [OpenAI Agents SDK — *Handoffs*](https://openai.github.io/openai-agents-python/handoffs/) — if you prefer the OpenAI ecosystem
 - [LlamaIndex — *Workflows*](https://docs.llamaindex.ai/en/stable/module_guides/workflow/) — light, event-driven
 - [CrewAI](https://docs.crewai.com/) — multi-agent role-play
-- [AutoGen](https://microsoft.github.io/autogen/) — Microsoft, conversational multi-agent
-- [OpenAI Agents SDK — *Handoffs*](https://openai.github.io/openai-agents-python/handoffs/) — if you prefer the OAI ecosystem
-- [GuruSup — *Best Multi-Agent Frameworks in 2026: LangGraph, CrewAI...*](https://gurusup.com/blog/best-multi-agent-frameworks-2026)
+- [Microsoft Agent Framework](https://learn.microsoft.com/en-us/azure/ai-services/agents/) — AutoGen + Semantic Kernel merger
+- [Mastra](https://mastra.ai/) — TS-first
+
+**Durable execution (when checkpointers aren't enough)**
+- [LangGraph Cloud / Platform](https://langchain-ai.github.io/langgraph/cloud/)
+- [Temporal](https://docs.temporal.io/develop/python/temporal-clients) — cluster-grade durable execution
+- [Restate](https://docs.restate.dev/) — lighter-weight durable handlers
 
 ---
 
