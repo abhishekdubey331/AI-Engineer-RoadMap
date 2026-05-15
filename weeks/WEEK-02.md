@@ -59,7 +59,7 @@ By Sunday night you should be able to:
 
 **Read (90 min):**
 - [Jay Alammar — *The Illustrated GPT-2*](https://jalammar.github.io/illustrated-gpt2/) — focuses on decoder-only and masked self-attention
-- [The Annotated Transformer (Harvard NLP)](http://nlp.seas.harvard.edu/2018/04/03/attention.html) — the original paper as runnable PyTorch. Skim, don't read every line; you'll come back to it.
+- [The Annotated Transformer (Harvard NLP, 2022 rewrite)](https://nlp.seas.harvard.edu/annotated-transformer/) — the original paper as runnable PyTorch. Skim, don't read every line; you'll come back to it.
 
 **Reflect:**
 - Why is causal (masked) attention strictly weaker than bidirectional attention, but better for generation?
@@ -96,10 +96,11 @@ The single most important video you will watch in this roadmap.
 
 ### Day 5 — Read the production version
 
-Karpathy's tiny GPT is the educational version. `nanoGPT` is the slightly-more-real version. Read it.
+Karpathy's tiny GPT is the educational version. `nanoGPT` is the slightly-more-real version. Read it — but note that as of Nov 2025 Karpathy marked it **superseded by `nanochat`**, which does the full pipeline (tokenizer → pretrain → SFT → chat UI) in one file.
 
 **Read (60 min):**
 - [karpathy/nanoGPT](https://github.com/karpathy/nanoGPT) — read [`model.py`](https://github.com/karpathy/nanoGPT/blob/master/model.py) line by line. It's ~300 lines. Annotate it with comments in your own words.
+- [karpathy/nanochat](https://github.com/karpathy/nanochat) — the 2026 successor. Skim the README to see the end-to-end pipeline; we'll come back to it in Week 8.
 
 **Then watch (~2h, can split across Day 5 and 6):**
 - [Andrej Karpathy — *Let's reproduce GPT-2 (124M)*](https://www.youtube.com/watch?v=l8pRSuU81PU) — the "real" tutorial, takes you from nano-GPT to actually training GPT-2 124M on FineWeb. Watch the first hour today.
@@ -113,13 +114,18 @@ Karpathy's tiny GPT is the educational version. `nanoGPT` is the slightly-more-r
 
 The original "Attention Is All You Need" transformer is 8 years old. Modern LLMs have replaced some of its components. Today is a quick tour.
 
-**Read (60 min):**
+**Read (75 min):**
 - [Eleuther — *Rotary Embeddings: A Relative Revolution*](https://blog.eleuther.ai/rotary-embeddings/) — RoPE is what Llama, Qwen, DeepSeek all use
+- [Sebastian Raschka — *Build a Large Language Model (from Scratch) — Ch. 4, §4: Grouped-Query Attention*](https://sebastianraschka.com/llms-from-scratch/ch04/04_gqa/) — the clearest GQA explainer with code. GQA is the attention variant *every* modern open model uses.
 - [Sebastian Raschka — *Understanding the Llama 3 Architecture*](https://magazine.sebastianraschka.com/p/understanding-the-llama-architecture) — covers RoPE, GQA, RMSNorm, SwiGLU concretely
-- [Lilian Weng — *The Transformer Family Version 2.0*](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/) — broad survey, skim
+- [Tri Dao — *FlashAttention-3*](https://tridao.me/blog/2024/flash3/) — what `attn_implementation="flash_attention_2"` actually does and why H100 is so much faster
+- [Lilian Weng — *The Transformer Family Version 2.0*](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/) — broad survey, skim (slightly dated, but the bones are right)
 
-**Optional skim (paper time, only if you're hungry):**
-- [Vaswani et al. — *Attention Is All You Need*](https://arxiv.org/abs/1706.03762) — the original; read sections 3 and 5
+**Required paper read on Day 7 (after you've coded):**
+- [Vaswani et al. — *Attention Is All You Need*](https://arxiv.org/abs/1706.03762) — read sections 3 and 5. The paper sticks far better after you've implemented it.
+
+**Optional but excellent:**
+- [Anthropic — *A Mathematical Framework for Transformer Circuits*](https://transformer-circuits.pub/2021/framework/index.html) — the "residual stream" mental model your diagrams rely on comes from here; the "Zero-layer" and "One-layer" sections are enough.
 
 ---
 
@@ -162,6 +168,7 @@ Pick a corpus that is interesting to **you**:
 - Replace your absolute positional embedding with **RoPE** and confirm samples are at least as good
 - Replace LayerNorm with **RMSNorm**
 - Replace ReLU/GELU MLP with **SwiGLU**
+- **Swap MHA for GQA** (e.g., 6 query heads → 2 KV heads) — the single most relevant modern-architecture exercise
 - Plot per-head attention patterns for one sample and write a paragraph about what you see
 
 ### Deliverable
@@ -193,13 +200,17 @@ This repo goes on your GitHub. Pin it.
 - [Jay Alammar — *The Illustrated Transformer*](https://jalammar.github.io/illustrated-transformer/)
 - [Jay Alammar — *The Illustrated GPT-2*](https://jalammar.github.io/illustrated-gpt2/)
 - [Sebastian Raschka — *Understanding the Llama 3 Architecture*](https://magazine.sebastianraschka.com/p/understanding-the-llama-architecture)
-- [The Annotated Transformer (Harvard NLP)](http://nlp.seas.harvard.edu/2018/04/03/attention.html) — the paper as code
+- [Sebastian Raschka — *LLMs from Scratch · Ch. 4 §4: Grouped-Query Attention*](https://sebastianraschka.com/llms-from-scratch/ch04/04_gqa/)
+- [Tri Dao — *FlashAttention-3*](https://tridao.me/blog/2024/flash3/)
+- [Anthropic — *A Mathematical Framework for Transformer Circuits*](https://transformer-circuits.pub/2021/framework/index.html) — the residual-stream mental model
+- [The Annotated Transformer (Harvard NLP, 2022)](https://nlp.seas.harvard.edu/annotated-transformer/) — the paper as code
 - [Lilian Weng — *The Transformer Family Version 2.0*](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/)
 - [Eleuther — *Rotary Embeddings: A Relative Revolution*](https://blog.eleuther.ai/rotary-embeddings/)
 
 **Code**
 - [karpathy/ng-video-lecture](https://github.com/karpathy/ng-video-lecture) — companion for *Let's build GPT*
-- [karpathy/nanoGPT](https://github.com/karpathy/nanoGPT) — the slightly-more-real version
+- [karpathy/nanoGPT](https://github.com/karpathy/nanoGPT) — the slightly-more-real educational version
+- [karpathy/nanochat](https://github.com/karpathy/nanochat) — Nov 2025 successor; full pretrain→SFT→chat pipeline in one file
 - [karpathy/build-nanogpt](https://github.com/karpathy/build-nanogpt) — companion for *Let's reproduce GPT-2*
 
 **Papers (light skim only)**

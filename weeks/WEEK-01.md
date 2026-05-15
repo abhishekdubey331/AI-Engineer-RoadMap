@@ -45,13 +45,13 @@ By Sunday night you should be able to:
 - [Hugging Face NLP Course — Chapter 6: The 🤗 Tokenizers library — *Introduction* + *Training a new tokenizer*](https://huggingface.co/learn/llm-course/chapter6/1)
 
 **Reflect:**
-- Open [OpenAI's Tokenizer playground](https://platform.openai.com/tokenizer) and paste:
+- Open [**tiktokenizer**](https://tiktokenizer.vercel.app/) (single-page visual diff across GPT-4o, Claude, Llama-3, Qwen, Mistral, Gemma — much better than OpenAI's own tool for comparison work) and paste:
   - A simple English sentence
   - A Python snippet with indentation
   - A long number like `1234567890123`
   - A non-English sentence (Hindi, Mandarin, Arabic, etc.)
   - The word `SolidGoldMagikarp`
-- Count the tokens for each. Notice the asymmetry.
+- Count the tokens for each. Notice the asymmetry — non-English text can cost 5–15× more tokens. (For why, skim [Petrov et al. — *Language Model Tokenizers Introduce Unfairness Between Languages*](https://arxiv.org/abs/2305.15425), NeurIPS 2023; one page is enough.)
 
 ---
 
@@ -75,8 +75,7 @@ By Sunday night you should be able to:
 
 **Read (60 min):**
 - [Karpathy `minbpe` README + `lecture.md`](https://github.com/karpathy/minbpe) — the lecture.md is a written companion to the video, very dense
-- [Answer.AI — *How I created the Karpathy Tokenizers book chapter*](https://www.answer.ai/posts/2025-10-13-video-to-doc.html) (skim — context for the next reading)
-- [Fast.ai — *Let's Build the GPT Tokenizer: A Complete Guide to Tokenization in LLMs*](https://www.fast.ai/posts/2025-10-16-karpathy-tokenizers) (the book-chapter version of the video — the best written reference on this topic)
+- [Fast.ai — *Let's Build the GPT Tokenizer: A Complete Guide to Tokenization in LLMs*](https://www.fast.ai/posts/2025-10-16-karpathy-tokenizers) — the book-chapter version of the video, the best written reference on this topic
 
 **Hands-on (45 min):**
 - `pip install tiktoken sentence-transformers transformers`
@@ -89,7 +88,7 @@ By Sunday night you should be able to:
   for enc in ["gpt2", "cl100k_base", "o200k_base"]:
       print(enc, len(tiktoken.get_encoding(enc).encode(text)))
 
-  for hf in ["meta-llama/Meta-Llama-3-8B", "Qwen/Qwen2.5-Coder-7B"]:
+  for hf in ["meta-llama/Llama-3.3-8B-Instruct", "Qwen/Qwen3-Coder-7B-Instruct"]:
       tok = AutoTokenizer.from_pretrained(hf)
       print(hf, len(tok.encode(text)))
   ```
@@ -156,7 +155,9 @@ Now that you understand tokens, the next layer up: **what does the model do with
 - Run this and explore:
   ```python
   from sentence_transformers import SentenceTransformer
-  model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+  # Current (2026) strong open small embedding — Apache-2.0, fits anywhere.
+  # Alternatives worth trying: nomic-ai/nomic-embed-text-v2-moe, mixedbread-ai/mxbai-embed-large-v1
+  model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
 
   sents = [
       "How do I sort a list in Python?",
@@ -168,6 +169,7 @@ Now that you understand tokens, the next layer up: **what does the model do with
   # Compute cosine similarity between all pairs and print the matrix
   ```
 - See how the first two are very close, and code is also closer to them than the bread question.
+- Open the [MTEB leaderboard](https://huggingface.co/spaces/mteb/leaderboard) and look at the **retrieval** column (not the overall average — that's the metric that matters for RAG). Note who's at the top: this is how you'll pick an embedding in Week 5.
 
 This is the foundation of RAG, which we hit in Week 5.
 
@@ -179,7 +181,7 @@ Today is build + polish + a small detective story.
 
 **Read (30 min) — *the cautionary tale*:**
 - [LessWrong — *SolidGoldMagikarp (plus, prompt generation)*](https://www.lesswrong.com/posts/aPeJE8bSo6rAFoLqg/solidgoldmagikarp-plus-prompt-generation) — the canonical "tokenization broke the model" story. Skim it.
-- Bonus skim: [Riley Goodside on tokenization quirks](https://x.com/goodside) — search his posts for tokenizer-related threads
+- [Rumbelow et al. (2024) — *Decomposing the Dark Matter of Tokenizers*](https://arxiv.org/abs/2405.05417) — the formal follow-up to SolidGoldMagikarp; gives you the framework for finding glitch tokens systematically.
 
 **Build & finalize the weekly project (next section).**
 
@@ -198,7 +200,7 @@ prompts/system.md   1,243      $0.0062
 prompts/user.md     412        $0.0021
 TOTAL               1,655      $0.0083
 
-$ token-budget --model llama-3.1-8b ./repo/
+$ token-budget --model llama-3.3-8b ./repo/
 src/main.py         523
 src/utils.py        212
 docs/README.md      891
@@ -211,9 +213,9 @@ TOTAL              4,237 tokens, fits in 8k context ✓
 - A `bpe.py` containing your own `BasicTokenizer` and `RegexTokenizer` (from Days 4–5)
 - A CLI (`argparse` or `click`) that accepts:
   - One or more file paths, OR a directory (recursively scans `.py`, `.md`, `.txt`, `.json`)
-  - `--model` flag with at least 3 options: `gpt-4o`, `llama-3.1-8b`, `your-own-bpe`
+  - `--model` flag with at least 3 options: `gpt-4o`, `llama-3.3-8b` (or `qwen3-coder` if you can't get Llama-gate access), `your-own-bpe`
 - For `gpt-4o` use `tiktoken`'s `o200k_base`
-- For `llama-3.1-8b` use `AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B")` (or a permissively-licensed equivalent if you can't access the Llama gate)
+- For `llama-3.3-8b` use `AutoTokenizer.from_pretrained("meta-llama/Llama-3.3-8B-Instruct")` (or ungated `Qwen/Qwen3-Coder-7B-Instruct`)
 - For `your-own-bpe` use your own trained tokenizer
 - Output: per-file token count, total, cost estimate (use today's published $/1M token prices, hardcoded with a comment)
 - 5+ `pytest` tests
@@ -223,6 +225,7 @@ TOTAL              4,237 tokens, fits in 8k context ✓
 
 - Add a `--diff` mode that compares two tokenizers on the same input and prints the delta
 - Add a `--longest-token` mode that finds the rarest tokens in a corpus (this is how you find `SolidGoldMagikarp`-style glitch tokens)
+- Add a `--model claude-opus` option that uses Anthropic's `client.messages.count_tokens()` endpoint — a real production primitive you'll use later in the roadmap
 
 ---
 
@@ -248,6 +251,8 @@ TOTAL              4,237 tokens, fits in 8k context ✓
 **Papers (light skim only, do not get stuck here)**
 - [Sennrich et al. (2016) — *Neural Machine Translation of Rare Words with Subword Units*](https://arxiv.org/abs/1508.07909) — the original BPE paper for NMT
 - [Radford et al. (2019) — GPT-2 paper](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) — see the tokenization section
+- [Petrov et al. (2023) — *Language Model Tokenizers Introduce Unfairness Between Languages*](https://arxiv.org/abs/2305.15425) — the canonical "non-English costs 5–15× more tokens" paper
+- [Rumbelow et al. (2024) — *Decomposing the Dark Matter of Tokenizers*](https://arxiv.org/abs/2405.05417) — formal follow-up to SolidGoldMagikarp
 
 **Cautionary tale**
 - [LessWrong — *SolidGoldMagikarp*](https://www.lesswrong.com/posts/aPeJE8bSo6rAFoLqg/solidgoldmagikarp-plus-prompt-generation)
