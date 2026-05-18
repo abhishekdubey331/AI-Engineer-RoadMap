@@ -73,7 +73,7 @@ Today: take your Week 7 dataset and SFT a small model on it.
 **Recommended setup (Colab T4 / 16GB VRAM, May 2026)**:
 - Base model — pick one (all current as of May 2026; check each model card for the exact `target_modules` list):
   - `Qwen/Qwen3-1.7B-Base` or `Qwen/Qwen3-Coder-1.5B-Instruct` (best for code tasks)
-  - `meta-llama/Llama-3.3-3B-Instruct`
+  - `meta-llama/Llama-3.2-3B-Instruct`
   - `microsoft/Phi-4-mini-instruct`
   - `google/gemma-3-1b-it`
 - Format: chat template (you converted to this in Week 7)
@@ -254,7 +254,7 @@ lora-codetune/
 - [Jiang et al. — *NEFTune: Noisy Embeddings Improve Instruction Finetuning*](https://arxiv.org/abs/2310.05914)
 
 **Free Colab notebooks (don't sleep on these)**
-- [Unsloth — live notebooks index](https://docs.unsloth.ai/get-started/unsloth-notebooks) — covers Qwen3, Llama-3.3, Gemma-3, Phi-4, and GRPO recipes; pick the one matching your base
+- [Unsloth — live notebooks index](https://docs.unsloth.ai/get-started/unsloth-notebooks) — covers Qwen3, Llama-3.1/3.2/3.3, Gemma-3, Phi-4, and GRPO recipes; pick the one matching your base
 - [Hugging Face Open-Source AI Cookbook](https://huggingface.co/learn/cookbook/index) — alternative recipes if you prefer plain TRL
 
 ---

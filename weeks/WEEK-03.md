@@ -59,7 +59,7 @@ Try 2–3 different small code models from the HF hub. Notice latency, memory, a
 - `Qwen/Qwen3-Coder-1.5B-Instruct` *(replaces Qwen2.5-Coder)*
 - `Qwen/Qwen3-Coder-7B-Instruct`
 - `microsoft/Phi-4-mini-instruct` *(replaces Phi-3.5; uses GQA, scores 8–12% higher across MMLU/MATH/HumanEval)*
-- `meta-llama/Llama-3.3-3B-Instruct`
+- `meta-llama/Llama-3.2-3B-Instruct`
 - `google/gemma-3-1b-it`
 - `HuggingFaceTB/SmolLM3-3B-Instruct` *(replaces SmolLM2)* — and the 360M variant for laptops without a GPU
 
@@ -162,7 +162,7 @@ bnb = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=torch.bfloat16,
 )
 model = AutoModelForCausalLM.from_pretrained(
-    "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+    "Qwen/Qwen3-Coder-1.5B-Instruct",
     quantization_config=bnb,
     device_map="auto",
 )
@@ -197,7 +197,7 @@ A local code-completion CLI that wraps a small open-weight model, with a benchma
 ### Spec
 
 ```
-$ code-completer --model qwen-0.5b "def fibonacci(n: int) -> int:"
+$ code-completer --model qwen3-coder-1.5b "def fibonacci(n: int) -> int:"
 def fibonacci(n: int) -> int:
     if n < 2:
         return n
@@ -205,11 +205,11 @@ def fibonacci(n: int) -> int:
 
 [12.4 tok/s, 4.2s, peak 1.1 GB VRAM]
 
-$ code-completer bench --prompts ./benchmarks/prompts.jsonl --models qwen3-1.5b,qwen3-7b,phi-4-mini
-model         prompts  avg-tok/s  avg-first-token-ms  vram-peak  pass@1*
-qwen3-1.5b    20       38.2       180                 1.1 GB     0.50
-qwen3-7b      20       21.5       320                 7.0 GB     0.68
-phi-4-mini    20       18.9       410                 4.4 GB     0.72
+$ code-completer bench --prompts ./benchmarks/prompts.jsonl --models qwen3-coder-1.5b,qwen3-coder-7b,phi-4-mini
+model              prompts  avg-tok/s  avg-first-token-ms  vram-peak  pass@1*
+qwen3-coder-1.5b   20       38.2       180                 1.1 GB     0.50
+qwen3-coder-7b     20       21.5       320                 7.0 GB     0.68
+phi-4-mini         20       18.9       410                 4.4 GB     0.72
 
 * pass@1 here uses a 20-task HumanEval subset with sandboxed execution (we'll harden this in Week 11). Skip "exact-line match" — it incentivises the wrong behaviour.
 ```
@@ -223,7 +223,7 @@ phi-4-mini    20       18.9       410                 4.4 GB     0.72
   - `Qwen/Qwen3-Coder-1.5B-Instruct`
   - `Qwen/Qwen3-Coder-7B-Instruct`
   - `microsoft/Phi-4-mini-instruct`
-  - `meta-llama/Llama-3.3-3B-Instruct`
+  - `meta-llama/Llama-3.2-3B-Instruct`
   - `google/gemma-3-1b-it`
   - `HuggingFaceTB/SmolLM3-3B-Instruct`
 - `--load-4bit` flag using `BitsAndBytesConfig`
@@ -265,7 +265,7 @@ phi-4-mini    20       18.9       410                 4.4 GB     0.72
 **Models for the week (all 2026-current)**
 - [Qwen3-Coder collection](https://huggingface.co/collections/Qwen/qwen3-coder)
 - [Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct)
-- [Llama-3.3 collection](https://huggingface.co/meta-llama)
+- [Llama-3.1 / 3.2 small variants](https://huggingface.co/meta-llama)
 - [Gemma 3 collection](https://huggingface.co/collections/google/gemma-3)
 - [SmolLM3 collection](https://huggingface.co/HuggingFaceTB) — laptop-friendly
 

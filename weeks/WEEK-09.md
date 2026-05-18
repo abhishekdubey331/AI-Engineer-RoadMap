@@ -21,7 +21,7 @@ By Sunday night you should be able to:
 
 1. Explain what FP16, BF16, FP8, INT8, INT4 represent and when each is used
 2. Explain how AWQ, GPTQ, and GGUF differ in algorithm and use-case
-3. Quantize a model with `auto-gptq`, `autoawq`, and `llama.cpp` (GGUF) and run it locally
+3. Quantize a model with `llm-compressor` (AWQ / GPTQ / FP8), `GPTQModel`, and `llama.cpp` (GGUF) and run it locally
 4. Run a **QLoRA** fine-tune that wouldn't have fit in plain LoRA
 5. Benchmark base / LoRA / QLoRA / GPTQ / AWQ / GGUF on quality, VRAM, latency, throughput
 6. Recommend a quantization for a given deployment target (laptop, T4, A10, H100)
@@ -263,7 +263,7 @@ GGUF Q2_K (llama.cpp)         0.9 GB  170 ms   45.1    0.55    0.7 GB ← qualit
 
 1. **"Lower bit = always worse."** Often false. AWQ-4 sometimes beats GPTQ-8 on code. Trust measurements.
 2. **Comparing quality on 3 prompts.** Use at least 50 to reach signal.
-3. **Quantizing and forgetting to use the right loader.** Quantized weights must be loaded with the matching library (`AutoAWQForCausalLM` for AWQ, `AutoGPTQForCausalLM` for GPTQ).
+3. **Quantizing and forgetting to use the right loader.** For production, load AWQ / GPTQ / FP8 checkpoints with **vLLM** (`--quantization awq|gptq|fp8`) or via **Transformers' built-in integration with `GPTQModel` / `llm-compressor`**. The legacy `AutoAWQForCausalLM` / `AutoGPTQForCausalLM` classes still work but their parent libraries are archived — don't build new code around them.
 4. **Disk size = VRAM.** Not quite — there's always overhead (KV cache, activations). Always measure VRAM in practice with `nvidia-smi`.
 5. **Quantizing chat templates away.** Always save and ship the *original* tokenizer with the quantized model.
 

@@ -23,7 +23,7 @@ By Sunday night you should be able to:
 2. Compute `pass@k` correctly (the hypergeometric estimator, not the naive one)
 3. Stand up a sandboxed execution environment (Docker + resource limits + timeout) that safely runs generated code
 4. Run HumanEval, MBPP, and at least one harder benchmark (BigCodeBench or LiveCodeBench) against your model
-5. Read a SWE-bench-Lite trajectory and explain what makes it hard
+5. Read a SWE-bench-Verified trajectory and explain what makes it hard
 6. Build a custom mini-eval for *your* task (the Week-7 dataset's test split, scored properly)
 7. Use **LLM-as-judge** correctly: when it works, when it lies
 
@@ -262,7 +262,7 @@ $ code-eval report --output report.md
 - [ ] Generated code runs in a sandbox with timeout + no network
 - [ ] pass@k uses the correct hypergeometric estimator
 - [ ] I have evaluated my Week-8 fine-tuned model on a custom task dataset and have a number
-- [ ] I have read one SWE-bench-Lite trajectory in detail and can explain what made it hard
+- [ ] I have read one SWE-bench-Verified trajectory in detail and can explain what made it hard
 - [ ] I have an LLM-as-judge mode and have validated it against human grades on a sample
 - [ ] I have a `report.md` showing at least 2 models × 2 datasets
 - [ ] I've written a retro

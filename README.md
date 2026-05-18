@@ -143,7 +143,7 @@ Pin these on your GitHub. They *are* your portfolio.
 |:---:|---|---|---|
 | **[13](./weeks/WEEK-13.md)** | Tool calling + agent design patterns | `code-helper-agent` (hand-rolled + Agents SDK) | Anthropic *Building Effective Agents*, OpenAI Agents SDK |
 | **[14](./weeks/WEEK-14.md)** | Agent orchestration with LangGraph | `coding-agent-graph` w/ HIL + checkpoints | LangGraph docs |
-| **[15](./weeks/WEEK-15.md)** | Agent evaluation + observability (Langfuse) | `agent-eval-and-obs` + SWE-bench-Lite run | Anthropic on agent evals, Langfuse, Inspect AI |
+| **[15](./weeks/WEEK-15.md)** | Agent evaluation + observability (Langfuse) | `agent-eval-and-obs` + SWE-bench-Verified-Lite run | Anthropic on agent evals, Langfuse, Inspect AI |
 | **[16](./weeks/WEEK-16.md)** | 🏁 **Capstone: Autonomous Coding Agent on SWE-bench-Verified-Lite** | End-to-end system w/ public benchmark headline number + demo | All of the above |
 
 ---
@@ -202,8 +202,8 @@ If you spend 80% of your time watching videos, you are *avoiding* the work, not 
 | **Core** | Python, Git, Linux shell, Docker, FastAPI, Pytest |
 | **Modeling** | PyTorch, Hugging Face Transformers / Datasets / Accelerate, PEFT, TRL, Unsloth |
 | **Inference** | vLLM, llama.cpp, Ollama, Text Generation Inference (TGI) |
-| **Quantization** | bitsandbytes, auto-gptq, autoawq, GGUF |
-| **Retrieval** | sentence-transformers, Qdrant / Chroma, FAISS, BM25, BGE rerankers |
+| **Quantization** | bitsandbytes, llm-compressor, GPTQModel, GGUF (`llama.cpp`) |
+| **Retrieval** | sentence-transformers, Qdrant / Chroma, FAISS, bm25s, BGE / mxbai rerankers, RAGatouille (ColBERT) |
 | **Agents** | LangGraph, OpenAI Agents SDK, Anthropic tool use |
 | **Evaluation** | HumanEval, BigCodeBench, Ragas, Inspect AI, LLM-as-judge |
 | **Observability** | Langfuse (default), LangSmith, Arize Phoenix |
@@ -271,7 +271,7 @@ This roadmap stands on the shoulders of giants. The single best resources, by to
 - **Quantization** — [Maarten Grootendorst](https://newsletter.maartengrootendorst.com/), [Tim Dettmers (QLoRA)](https://arxiv.org/abs/2305.14314)
 - **Inference** — [vLLM team](https://github.com/vllm-project/vllm), [Anyscale](https://www.anyscale.com/blog/continuous-batching-llm-inference)
 - **Agents** — [Anthropic *Building Effective Agents*](https://www.anthropic.com/research/building-effective-agents), [Lilian Weng](https://lilianweng.github.io/), [LangChain team](https://langchain-ai.github.io/langgraph/)
-- **Evaluation** — [Anthropic *Demystifying evals*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents), [Eugene Yan](https://eugeneyan.com/), [Inspect AI](https://inspect.ai-safety-institute.org.uk/)
+- **Evaluation** — [Anthropic *Demystifying evals*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents), [Hamel Husain](https://hamel.dev/blog/posts/evals/), [Eugene Yan](https://eugeneyan.com/), [Inspect AI](https://inspect.aisi.org.uk/)
 
 If your work is referenced and you'd like a link changed or credit corrected, open an issue and I'll fix it the same day.
 

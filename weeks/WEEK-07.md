@@ -117,7 +117,7 @@ For this roadmap your default is **synthetic + hand-curated** — that's how Alp
 
 Today you start the actual project (Weekly Project below). Pick a task — *one* narrow task. Examples:
 
-- **Design tokens → React component** (for the Week 16 capstone)
+- **Issue text → top-3 candidate files to edit** (the file-localiser sub-task for the Week 16 SWE-bench capstone)
 - **Stack trace → likely root cause**
 - **Code → docstring**
 - **Code → unit tests**

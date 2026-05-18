@@ -88,7 +88,7 @@ By Sunday night you should be able to:
   for enc in ["gpt2", "cl100k_base", "o200k_base"]:
       print(enc, len(tiktoken.get_encoding(enc).encode(text)))
 
-  for hf in ["meta-llama/Llama-3.3-8B-Instruct", "Qwen/Qwen3-Coder-7B-Instruct"]:
+  for hf in ["meta-llama/Llama-3.1-8B-Instruct", "Qwen/Qwen3-Coder-7B-Instruct"]:
       tok = AutoTokenizer.from_pretrained(hf)
       print(hf, len(tok.encode(text)))
   ```
@@ -200,7 +200,7 @@ prompts/system.md   1,243      $0.0062
 prompts/user.md     412        $0.0021
 TOTAL               1,655      $0.0083
 
-$ token-budget --model llama-3.3-8b ./repo/
+$ token-budget --model llama-3.1-8b ./repo/
 src/main.py         523
 src/utils.py        212
 docs/README.md      891
@@ -213,9 +213,9 @@ TOTAL              4,237 tokens, fits in 8k context ✓
 - A `bpe.py` containing your own `BasicTokenizer` and `RegexTokenizer` (from Days 4–5)
 - A CLI (`argparse` or `click`) that accepts:
   - One or more file paths, OR a directory (recursively scans `.py`, `.md`, `.txt`, `.json`)
-  - `--model` flag with at least 3 options: `gpt-4o`, `llama-3.3-8b` (or `qwen3-coder` if you can't get Llama-gate access), `your-own-bpe`
+  - `--model` flag with at least 3 options: `gpt-4o`, `llama-3.1-8b` (or `qwen3-coder` if you can't get Llama-gate access), `your-own-bpe`
 - For `gpt-4o` use `tiktoken`'s `o200k_base`
-- For `llama-3.3-8b` use `AutoTokenizer.from_pretrained("meta-llama/Llama-3.3-8B-Instruct")` (or ungated `Qwen/Qwen3-Coder-7B-Instruct`)
+- For `llama-3.1-8b` use `AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")` (or ungated `Qwen/Qwen3-Coder-7B-Instruct`)
 - For `your-own-bpe` use your own trained tokenizer
 - Output: per-file token count, total, cost estimate (use today's published $/1M token prices, hardcoded with a comment)
 - 5+ `pytest` tests
