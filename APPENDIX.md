@@ -15,7 +15,7 @@ The roadmap covers what could fairly be called **LLMOps**: serving (W10), gatewa
 | Topic | Why it's out of scope | When you'll need it |
 |---|---|---|
 | **Dataset versioning** (DVC, lakeFS) | Adds weight; HF Hub + git is enough for the roadmap's project scale | The moment you have >1 person committing to a dataset, or you're regenerating eval sets and comparing across versions |
-| **Experiment tracking** at scale (W&B, MLflow, Comet) | Briefly touched in W8 stretch goals | You're training >5 fine-tunes a week and your `outputs/` folder becomes unreadable |
+| **Experiment tracking** at scale (W&B, MLflow, Comet) | Briefly touched in W11 stretch goals (`Export to W&B or MLflow`) | You're training >5 fine-tunes a week and your `outputs/` folder becomes unreadable |
 | **Model registry & promotion** (W&B Models, MLflow Model Registry) | HF Hub doubles as registry for the roadmap's purposes | Multi-environment promotion (dev → staging → prod) with approval gates |
 | **Pipeline orchestration** (Airflow, Prefect, Dagster, Kubeflow Pipelines, ZenML) | Out of scope; each is a separate week | You're running scheduled batch jobs (nightly evals, ingestion, retraining) |
 | **CI for evals / model gates** | Lightly covered (W15 regression suite) | You want a PR to fail if pass-rate drops by ≥X% |

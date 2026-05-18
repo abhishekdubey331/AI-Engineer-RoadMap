@@ -19,7 +19,7 @@ By Sunday night you should be able to:
 
 1. Define and compute the agent-evaluation pillars: **task success**, **trajectory quality**, **tool-call accuracy**, **cost efficiency**
 2. Build an agent eval suite with at least 20 hand-curated tasks
-3. Use **Langfuse** (or LangSmith, or Arize Phoenix) to capture traces of every agent run
+3. Use **Langfuse** (the recommended default; LangSmith / Phoenix only if you have a real reason) to capture traces of every agent run
 4. Annotate failed traces with categories and surface aggregate failure-mode stats
 5. Set up regression alerts (when a metric drops, you know)
 6. Use **Inspect AI** or similar to run agent benchmarks reproducibly
@@ -268,4 +268,4 @@ agent-eval-and-obs/
 
 ---
 
-← Previous: [Week 14 — LangGraph Orchestration](./WEEK-14.md) · → Next: [Week 16 — Capstone: Autonomous Coding Agent on SWE-bench-Verified-Lite](./WEEK-16.md)
+← Previous: [Week 14 — Agent Orchestration with LangGraph](./WEEK-14.md) · → Next: [Week 16 — Capstone: Autonomous Coding Agent on SWE-bench-Verified-Lite](./WEEK-16.md)

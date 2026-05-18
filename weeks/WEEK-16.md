@@ -1,4 +1,4 @@
-# Week 16 — Capstone: Autonomous Coding Agent on SWE-bench-Verified
+# Week 16 — Capstone: Autonomous Coding Agent on SWE-bench-Verified-Lite
 
 > **Month 4 · Agents, Evaluation, Capstone**
 > *"This is the week the 15 pieces become one product, scored against a public benchmark a hiring manager already knows. Everything you've built is on trial."*
@@ -335,7 +335,7 @@ All of these get a public headline number that translates to interview signal.
 
 You've shipped:
 
-- **15 portfolio repos** (the artifacts of Weeks 1–15)
+- **16 portfolio repos** (the artifacts of Weeks 1–16, with this capstone as the headline)
 - **One fine-tuned model on Hugging Face** (W8) + a small optional file-localiser (W16)
 - **One quantization benchmark** (W9)
 - **One vLLM serving stack** (W10)

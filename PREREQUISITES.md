@@ -91,8 +91,6 @@ You should be able to:
 
 ---
 
-## 6. ML & PyTorch (very light)
-
 ## 6. Math foundations (light but non-negotiable)
 
 You do **not** need a math degree. You do need a working intuition for the operations LLMs are made of, because by Week 2 you'll be staring at attention (matmul + softmax) and by Week 5 you'll be tuning cosine-similarity thresholds. If matmul feels magical, the rest of the roadmap is brittle.
