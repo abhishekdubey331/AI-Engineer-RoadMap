@@ -1,10 +1,15 @@
 # Appendix — Beyond the 16 weeks
 
-> What this roadmap deliberately doesn't teach, and how to extend it.
+> Two things the 16-week path doesn't cover in depth, plus the reading method that ties the citations together.
 
-The 4-month roadmap is opinionated about what gets in: enough math to understand attention, enough PyTorch to fine-tune, RAG + serving + agents + eval. Two big areas are deliberately **lightly covered or omitted** because doing them properly takes another month each, and most learners don't need them right after finishing. Both are addressed here, with curated resources.
+The 4-month roadmap is scoped to **LLM systems engineering**: tokenization → transformers → fine-tuning → RAG → serving → agents → eval. Foundations that load-bear under that path (basic math, PyTorch fundamentals) live in [`PREREQUISITES.md`](./PREREQUISITES.md) — read those *before* Week 1.
 
-A third section — **How to read AI papers** — is added because almost every week of the roadmap cites papers, and a deliberate reading method is the difference between *seeing* a paper and *understanding* it.
+This appendix covers the two adjacent areas that the weekly content deliberately stays out of:
+
+- **MLOps** — the classical ML-systems discipline (data versioning, experiment tracking, model registries, drift, deployment patterns). The roadmap already does a lot of what's now called *LLMOps* — serving in W10, the gateway in W12, evals in W11 and W15. Full MLOps is another month of material; this section curates that path.
+- **How to read AI papers** — almost every week cites papers. The *method* for reading them is what turns those citations into a usable mental model. The roadmap implies this; the appendix makes it explicit.
+
+A third short section at the end is the north-star sentence to hold yourself to after the 16 weeks.
 
 ---
 
