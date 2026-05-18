@@ -17,7 +17,7 @@ A free, open-source, deeply-researched 16-week roadmap covering **LLM internals,
 [![Time](https://img.shields.io/badge/Time-2--3_hrs%2Fday-f97316?style=flat-square)](#-how-to-use-this-roadmap)
 [![Updated](https://img.shields.io/github/last-commit/abhishekdubey331/AI-Engineer-RoadMap?style=flat-square&label=updated&color=06b6d4)](https://github.com/abhishekdubey331/AI-Engineer-RoadMap/commits)
 
-[**🚀 Start Here**](./weeks/WEEK-01.md) ・ [**📋 Prerequisites**](./PREREQUISITES.md) ・ [**🗺️ 16-Week Map**](#-the-16-week-map) ・ [**🛠️ Stack**](#-the-stack-youll-learn) ・ [**🤝 Contribute**](#-contributing)
+[**🚀 Start Here**](./weeks/WEEK-01.md) ・ [**📋 Prerequisites**](./PREREQUISITES.md) ・ [**🗺️ 16-Week Map**](#-the-16-week-map) ・ [**🛠️ Stack**](#-the-stack-youll-learn) ・ [**📎 Beyond the 16 Weeks**](./APPENDIX.md) ・ [**🤝 Contribute**](#-contributing)
 
 </div>
 
@@ -291,6 +291,16 @@ If this helps you, please share it — it's the only "marketing" this project ha
 ## 📜 License
 
 Released under the [**MIT License**](./LICENSE) — free for personal, educational, and commercial use. Attribution appreciated but not required.
+
+---
+
+## 📎 Beyond the 16 weeks
+
+The roadmap is deliberately scoped to *LLM systems engineering*. Two areas are lightly covered on purpose, plus one reading habit that's mentioned everywhere but rarely taught explicitly. All three are covered in [**APPENDIX.md**](./APPENDIX.md):
+
+- 🔧 **MLOps extensions** — dataset versioning (DVC), experiment tracking (MLflow / W&B), model registry, pipeline orchestration, drift monitoring, deployment patterns. Curated path through [Made With ML](https://madewithml.com/courses/mlops/) and [DataTalksClub MLOps Zoomcamp](https://github.com/DataTalksClub/mlops-zoomcamp), plus Chip Huyen's [*Designing ML Systems*](https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/) and [*AI Engineering*](https://www.oreilly.com/library/view/ai-engineering/9781098166298/).
+- 📄 **How to read AI papers** — Keshav's [three-pass method](https://www.cs.tufts.edu/~nr/cs257/archive/keshav/paper-reading.pdf), an LLM-augmented variant from Karpathy, plus the curated paper list (mapped to weeks) that backs the roadmap.
+- 🧭 **The north-star sentence** to hold yourself to after the 16 weeks.
 
 ---
 

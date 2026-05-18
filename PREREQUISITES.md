@@ -93,6 +93,57 @@ You should be able to:
 
 ## 6. ML & PyTorch (very light)
 
+## 6. Math foundations (light but non-negotiable)
+
+You do **not** need a math degree. You do need a working intuition for the operations LLMs are made of, because by Week 2 you'll be staring at attention (matmul + softmax) and by Week 5 you'll be tuning cosine-similarity thresholds. If matmul feels magical, the rest of the roadmap is brittle.
+
+You should be comfortable with:
+
+- **Vectors** — what they are, addition, scalar multiplication, magnitude/norm
+- **Dot product** and **cosine similarity** (you'll use cosine constantly in RAG)
+- **Matrices** and **matrix multiplication** (this is the engine of every transformer)
+- **Softmax** — turns logits into a probability distribution
+- **Loss functions** — especially **cross-entropy** (next-token prediction's bread and butter)
+- **Gradient descent** intuition — partial derivatives, the chain rule (one-line version), `loss.backward()` updates weights
+- **Probability basics** — joint, conditional, log-probabilities
+
+**Best refresher (pick one path):**
+
+- 🎥 **Visual path** — [3Blue1Brown — *Essence of Linear Algebra*](https://www.3blue1brown.com/topics/linear-algebra) (12 videos, ~3 hrs). The single best intro to vectors / matmul / eigenstuff in any medium. Pair with [3Blue1Brown — *Neural Networks*](https://www.3blue1brown.com/topics/neural-networks) chapters 1–4 for the loss-and-gradient picture.
+- 📚 **Practice-first path** — [Khan Academy — *Linear Algebra*](https://www.khanacademy.org/math/linear-algebra) (free, exercises included). Use as a workbook alongside 3Blue1Brown.
+- 🐍 **Code-first path** — [Pablo Caceres — *Introduction to Linear Algebra for Applied Machine Learning with Python*](https://pabloinsente.github.io/intro-linear-algebra) — every concept paired with NumPy code; closest to how you'll actually use the math.
+- 📖 **Reference book (free)** — [Boyd & Vandenberghe — *Introduction to Applied Linear Algebra*](https://web.stanford.edu/~boyd/vmls/) — the most beginner-friendly applied linear algebra textbook; PDF free online.
+
+**Bare-minimum signal** that you're ready: open a Python REPL and write, without Googling, (a) cosine similarity between two NumPy vectors, and (b) the softmax of a logit vector. If both come out in under 5 minutes, you're set.
+
+---
+
+## 7. PyTorch fundamentals (Week 2 assumes these)
+
+Earlier drafts of this roadmap said "you've used `.backward()` once" — that's not enough. Week 2 jumps into building a tiny GPT, which assumes you're fluent with **`nn.Module`**, **forward passes**, **training loops**, and **GPU device placement**. The fix: do *one* of the resources below *before* Week 2.
+
+You should be able to:
+
+- Move tensors between CPU and GPU (`tensor.to("cuda")`)
+- Subclass `nn.Module` with `__init__` and `forward`
+- Run an end-to-end training loop: forward → loss → `loss.backward()` → `optimizer.step()` → `optimizer.zero_grad()`
+- Use a `DataLoader` over a `Dataset`
+- Save and load model weights (`state_dict`)
+- Run inference in `torch.no_grad()` / `model.eval()` mode
+
+**Best refresher (pick one, do it end-to-end):**
+
+- 🚀 **Fastest path (~1 hr)** — [Sebastian Raschka — *PyTorch in One Hour: From Tensors to Training Neural Networks on Multiple GPUs*](https://sebastianraschka.com/teaching/pytorch-1h/) — dense, recent, exactly the right level.
+- 📘 **Official path (~2 hrs)** — [PyTorch — *Learn the Basics*](https://docs.pytorch.org/tutorials/beginner/basics/intro.html) — the canonical 8-section tutorial; ends with the FashionMNIST training loop you'll mirror in Week 2.
+- 🎬 **Deepest path (~10 hrs)** — [Andrej Karpathy — *Neural Networks: Zero to Hero*](https://karpathy.ai/zero-to-hero.html), parts 1–4 (micrograd → makemore → wavenet). If you do this *one* thing, you'll fly through Week 2.
+- 🧑‍🏫 **Course path** — [Daniel Bourke — *Zero to Mastery: Learn PyTorch for Deep Learning*](https://www.learnpytorch.io/) — free, comprehensive, code-along.
+
+**Bare-minimum signal** that you're ready: write a 50-line PyTorch script that trains a 2-layer MLP on the MNIST or FashionMNIST dataset, saves the weights, reloads them, and runs inference. If you can do that on a fresh notebook in under 30 minutes from scratch, you're set.
+
+---
+
+## 8. Classical ML refresher (light)
+
 You should have at least once:
 
 - Trained a simple model (logistic regression, MLP, or small CNN)
@@ -108,7 +159,7 @@ You do **not** need to know transformers yet — that's literally Week 2.
 
 ---
 
-## 7. Data handling
+## 9. Data handling
 
 You should be able to:
 
